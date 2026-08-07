@@ -55,6 +55,29 @@ mypy
 pytest
 ```
 
+### Golden files
+
+Every pass is tested against `tests/fixtures/bad-paper.md`, a short paper with
+defects planted on purpose. Its output is stored in `tests/golden/` and compared
+field by field, so a failure names the paths that changed rather than dumping
+two structures at you.
+
+Regenerate deliberately:
+
+```
+pytest --update-golden
+```
+
+Then read the diff and commit it. Never regenerate to turn a red test green.
+The whole point is that somebody looks at what changed and agrees with it.
+
+One paragraph of the fixture, in Results, must produce zero findings from every
+pass. A tool that flags everything is useless, so that paragraph is what proves
+the passes discriminate rather than fire. If a change makes it produce a
+finding, the change is wrong, however much it improved elsewhere.
+
+### Network tests
+
 Tests that hit a live external API are marked `@pytest.mark.network` and are
 excluded from the default run. CI runs against recorded fixtures so the build
 does not break when someone else's API is slow. A weekly scheduled job runs the

@@ -10,11 +10,22 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 
+from golden_harness import Golden
 from research_better.builder import DocumentBuilder
+from research_better.ingest import load
 from research_better.model import Document
+
+FIXTURES = Path(__file__).parent / "fixtures"
+BAD_PAPER = FIXTURES / "bad-paper.md"
+
+GOOD_PARAGRAPH_OPENER = "Recall at ten rises from 0.62 to 0.71"
+"""The paragraph of `bad-paper.md` that every pass must leave alone. A tool
+that flags everything is useless, so this is the case that proves the passes
+discriminate. See tests/fixtures/README.md."""
 
 HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
 
@@ -44,3 +55,32 @@ def _build(text: str) -> Document:
 @pytest.fixture
 def build_document() -> BuildDocument:
     return _build
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--update-golden",
+        action="store_true",
+        default=False,
+        help="Rewrite golden files from the current output. Read the diff before committing.",
+    )
+
+
+@pytest.fixture
+def golden(request: pytest.FixtureRequest) -> Golden:
+    return Golden(update=bool(request.config.getoption("--update-golden")))
+
+
+@pytest.fixture(scope="session")
+def bad_paper() -> Document:
+    """The fixture paper with defects planted on purpose."""
+    return load(BAD_PAPER)
+
+
+@pytest.fixture(scope="session")
+def good_paragraph_ids(bad_paper: Document) -> frozenset[str]:
+    """Span ids of the one paragraph that must survive every pass untouched."""
+    paragraph = next(
+        p for p in bad_paper.paragraphs if GOOD_PARAGRAPH_OPENER in bad_paper.text_of(p.span)
+    )
+    return frozenset(s.id for s in bad_paper.sentences if s.paragraph_id == paragraph.id)
