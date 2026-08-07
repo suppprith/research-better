@@ -1,0 +1,40 @@
+name: Live API check
+
+# The default CI run uses recorded fixtures, which means it cannot notice an
+# upstream API changing its response shape. This job is what notices. It runs
+# weekly rather than per commit so a scholarly API's rate limit is never a
+# reason a pull request is blocked.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  network:
+    name: live scholarly APIs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: pip install -e ".[all,dev]"
+
+      - name: pytest (network marker only)
+        run: |
+          set +e
+          pytest -m network -p no:cacheprovider
+          status=$?
+          # Exit code 5 means no test matched the marker. That is not a failure
+          # while the source adapters are still landing.
+          if [ "$status" -eq 5 ]; then
+            echo "No network tests collected yet."
+            exit 0
+          fi
+          exit "$status"
