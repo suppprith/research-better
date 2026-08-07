@@ -1,0 +1,6 @@
+# Keep line endings LF in the repository regardless of the contributor's OS.
+# Golden-output tests compare bytes, so a CRLF checkout would fail them for a
+# reason that has nothing to do with the code.
+* text=auto eol=lf
+*.png binary
+*.pdf binary
