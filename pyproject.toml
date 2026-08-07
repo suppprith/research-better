@@ -60,6 +60,12 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+# Segmentation has to name curly quotes and guillemets literally, because real
+# papers contain them and a sentence can end on one. RUF001 reads those as
+# lookalikes for ASCII quotes, which here is the point rather than a mistake.
+"src/research_better/segmentation.py" = ["RUF001"]
+
 [tool.mypy]
 python_version = "3.11"
 files = ["src"]
@@ -71,7 +77,12 @@ no_implicit_optional = true
 # Strict for the core model. Every later pass addresses text through it, so a
 # type error here propagates into every artifact the tool emits.
 [[tool.mypy.overrides]]
-module = ["research_better.model", "research_better.spans", "research_better.segmentation"]
+module = [
+    "research_better.builder",
+    "research_better.model",
+    "research_better.segmentation",
+    "research_better.spans",
+]
 disallow_untyped_defs = true
 disallow_any_generics = true
 strict_equality = true
