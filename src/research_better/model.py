@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from research_better.errors import ProtectedRangeError
+
 
 class FloatKind(StrEnum):
     """Block content that is never prose and is therefore never edited.
@@ -176,6 +178,22 @@ class Float:
 
 
 @dataclass(frozen=True, slots=True)
+class FileSegment:
+    """A run of the document's text that came from one file.
+
+    A LaTeX paper is normally written across several files pulled together with
+    `\\input`. Analysis wants the whole paper as one text. A patch wants the
+    file the text actually lives in, at that file's own offsets. This maps
+    between the two.
+    """
+
+    global_start: int
+    global_end: int
+    file: str
+    local_start: int
+
+
+@dataclass(frozen=True, slots=True)
 class LineMap:
     """Offset to 1-based line number, without rescanning the text each time."""
 
@@ -206,6 +224,14 @@ class Document:
     sentences: tuple[Sentence, ...] = ()
     citations: tuple[Citation, ...] = ()
     floats: tuple[Float, ...] = ()
+    protected: tuple[Span, ...] = ()
+    """Ranges no patch may touch. Math mode, command names, environment
+    delimiters, and label or reference arguments. See `assert_patchable`."""
+
+    file_segments: tuple[FileSegment, ...] = ()
+    """Set when the document was assembled from more than one file. Empty means
+    every offset belongs to `path`."""
+
     metadata: dict[str, str] = field(default_factory=dict)
     """Title, author, and anything else the format declares out of band. Front
     matter is metadata, not prose, so it is never segmented or analysed."""
@@ -280,3 +306,50 @@ class Document:
 
     def floats_of_kind(self, kind: FloatKind) -> tuple[Float, ...]:
         return tuple(item for item in self.floats if item.kind is kind)
+
+    # Compile safety --------------------------------------------------------
+
+    def overlapping_protected(self, span: Span) -> tuple[Span, ...]:
+        return tuple(region for region in self.protected if region.overlaps(span))
+
+    def is_patchable(self, span: Span) -> bool:
+        return not self.overlapping_protected(span)
+
+    def assert_patchable(self, span: Span, description: str = "this span") -> None:
+        """Refuse a patch that would land in text the format cannot survive.
+
+        The check lives on the document rather than in the edit pass because
+        the adapter is the only thing that knows which ranges are load bearing,
+        and every writer of a patch has to be held to the same rule.
+        """
+        overlaps = self.overlapping_protected(span)
+        if overlaps:
+            first = overlaps[0]
+            raise ProtectedRangeError(
+                description,
+                f"{self.text_of(first)!r} at line {first.line}",
+            )
+
+    # Multi-file attribution ------------------------------------------------
+
+    def locate(self, span: Span) -> tuple[str, int, int]:
+        """Where a span lives on disk: the file, and offsets within that file.
+
+        A single-file document reports its own path. A span that straddles two
+        files has no single home, which means something upstream built it
+        wrong, so this raises rather than silently picking one.
+        """
+        if not self.file_segments:
+            return str(self.path), span.char_start, span.char_end
+
+        for segment in self.file_segments:
+            if segment.global_start <= span.char_start < segment.global_end:
+                if span.char_end > segment.global_end:
+                    raise ValueError(
+                        f"span {span.char_start}..{span.char_end} crosses a file boundary "
+                        f"at {segment.global_end} in {segment.file}"
+                    )
+                shift = segment.local_start - segment.global_start
+                return segment.file, span.char_start + shift, span.char_end + shift
+
+        raise ValueError(f"offset {span.char_start} is outside every known file segment")

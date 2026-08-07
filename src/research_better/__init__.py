@@ -8,13 +8,17 @@ exception hierarchy every layer raises through.
 __version__ = "0.1.0"
 
 from research_better.errors import (
+    IngestError,
     MissingExtraError,
+    ProtectedRangeError,
     ResearchBetterError,
     UnsupportedFormatError,
 )
 
 __all__ = [
+    "IngestError",
     "MissingExtraError",
+    "ProtectedRangeError",
     "ResearchBetterError",
     "UnsupportedFormatError",
     "__version__",

@@ -20,10 +20,12 @@ from pathlib import Path
 from research_better.model import (
     Citation,
     Document,
+    FileSegment,
     Float,
     FloatKind,
     LineMap,
     Paragraph,
+    ResolvedWork,
     Section,
     Sentence,
     Span,
@@ -51,6 +53,8 @@ class DocumentBuilder:
         self._sentences: list[Sentence] = []
         self._citations: list[Citation] = []
         self._floats: list[Float] = []
+        self._protected: list[Span] = []
+        self._file_segments: list[FileSegment] = []
         self._metadata: dict[str, str] = {}
 
     # Span construction -----------------------------------------------------
@@ -150,7 +154,12 @@ class DocumentBuilder:
         return item
 
     def add_citation(
-        self, key: str, raw: str, span: Span, in_bibliography: bool = False
+        self,
+        key: str,
+        raw: str,
+        span: Span,
+        in_bibliography: bool = False,
+        resolved: ResolvedWork | None = None,
     ) -> Citation:
         """Record one citation key. Multi-key commands call this once per key."""
         section_key = section_path_key(self._open[-1].path) if self._open else ""
@@ -160,6 +169,7 @@ class DocumentBuilder:
             raw=raw,
             span=span,
             in_bibliography=in_bibliography,
+            resolved=resolved,
         )
         self._citations.append(citation)
         return citation
@@ -167,6 +177,14 @@ class DocumentBuilder:
     def set_metadata(self, key: str, value: str) -> None:
         """Record a document-level fact the format declares out of band."""
         self._metadata[key] = value
+
+    def add_protected(self, span: Span) -> None:
+        """Mark a range that no patch may overlap."""
+        self._protected.append(span)
+
+    def set_file_segments(self, segments: Sequence[FileSegment]) -> None:
+        """Record which file each stretch of the assembled text came from."""
+        self._file_segments = list(segments)
 
     # Freeze ----------------------------------------------------------------
 
@@ -183,6 +201,8 @@ class DocumentBuilder:
             sentences=tuple(self._sentences),
             citations=tuple(citations),
             floats=tuple(self._floats),
+            protected=tuple(sorted(self._protected)),
+            file_segments=tuple(self._file_segments),
             metadata=dict(self._metadata),
         )
 

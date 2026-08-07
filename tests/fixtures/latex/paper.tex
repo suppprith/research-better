@@ -1,0 +1,64 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\title{Sparse Retrieval Still Wins at Equal Cost}
+\author{A. Researcher}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Retrieval quality on this benchmark has plateaued since 2021. We show that
+BM25 with query expansion matches a dense encoder at equal cost.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Dense encoders are reported to beat sparse baselines \cite{smith2021,nakamura2023},
+but the comparisons in Fig.~\ref{fig:budget} hold the index size constant
+rather than the budget. % TODO: soften this before submission
+
+% This whole line is a note to my co-author and is not part of the paper.
+The gap closes once cost is held fixed, as \citet{chen2024} also observed.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{budget.pdf}
+  \caption{Recall against budget. This caption is not a claim sentence.}
+  \label{fig:budget}
+\end{figure}
+
+\input{method}
+
+\section{Results}
+
+Recall at ten improves by four points at one third of the cost, i.e. the gain
+is not an artifact of one query set. The inline term $k_1 = 0.9$ was fixed
+throughout, and Eq.~\ref{eq:score} is unchanged.
+
+\begin{table}[t]
+  \caption{Systems compared.}
+  \begin{tabular}{lrr}
+    \toprule
+    System & Recall@10 & Cost \\
+    \midrule
+    BM25+QE & 0.71 & 1.0 \\
+    Dense & 0.69 & 3.2 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Three conditions were tested.
+
+\begin{itemize}
+  \item Sparse retrieval alone, with no expansion applied to the query.
+  \item Sparse retrieval with the expansion described in \emph{Method}.
+  \item A dense encoder trained on the same corpus.
+\end{itemize}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

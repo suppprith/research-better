@@ -1,0 +1,12 @@
+\section{Method}
+
+The corpus is indexed with BM25 using $k_1 = 0.9$ and $b = 0.4$. Queries are
+expanded with the top three terms from a first-pass retrieval, which follows
+the setup in Sec.~3 of the original paper.
+
+\begin{equation}
+  \label{eq:score}
+  s(q, d) = \sum_{t \in q} \mathrm{idf}(t) \cdot \frac{f(t, d)}{f(t, d) + k_1}
+\end{equation}
+
+The scoring function above is unchanged from the reference implementation.

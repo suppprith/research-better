@@ -23,6 +23,28 @@ class UnsupportedFormatError(ResearchBetterError):
         super().__init__(f"No ingest adapter for '{suffix}'. Supported: {listed}.")
 
 
+class IngestError(ResearchBetterError):
+    """The source could not be read as the format it claims to be."""
+
+
+class ProtectedRangeError(ResearchBetterError):
+    """A patch overlapped text that must never be edited.
+
+    Math mode, command names, environment delimiters, and label or reference
+    arguments are protected. An edit inside any of them produces a document
+    that does not compile, which is a worse outcome than the writing problem
+    the edit was trying to fix. The edit pass refuses rather than tries.
+    """
+
+    def __init__(self, description: str, overlaps: str) -> None:
+        self.description = description
+        self.overlaps = overlaps
+        super().__init__(
+            f"Refusing to patch {description}: it overlaps protected source ({overlaps}). "
+            f"Editing there would break the build."
+        )
+
+
 class MissingExtraError(ResearchBetterError):
     """A feature was used whose dependency lives in an optional extra.
 

@@ -30,6 +30,8 @@ class Adapter:
 ADAPTERS: dict[str, Adapter] = {
     ".md": Adapter("research_better.ingest.markdown", "markdown"),
     ".markdown": Adapter("research_better.ingest.markdown", "markdown"),
+    ".tex": Adapter("research_better.ingest.latex", "latex", extra="latex"),
+    ".ltx": Adapter("research_better.ingest.latex", "latex", extra="latex"),
 }
 
 
