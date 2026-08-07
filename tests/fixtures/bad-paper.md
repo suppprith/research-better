@@ -27,13 +27,19 @@ this result and delivers state-of-the-art performance.
 Sparse retrieval has a long history in the literature [2]. Dense encoders were
 introduced later and have received considerable attention since [3].
 
-Search engines are used by billions of people every day. The web has grown
-enormously over the past three decades. Indexing at that scale requires
-substantial engineering effort.
-
 Furthermore, the question of evaluation has been raised repeatedly [4]. The
 retracted analysis of Vogel and Prasad remains widely cited despite its
 withdrawal, and its conclusions continue to circulate.
+
+Moreover, benchmark design has attracted a literature of its own. Several
+authors have argued that saturation makes comparison meaningless.
+
+Additionally, reproducibility work has grown in volume. Few of these studies
+agree on what counts as a successful replication.
+
+Search engines are used by billions of people every day. The web has grown
+enormously over the past three decades. Indexing at that scale requires
+substantial engineering effort.
 
 # Method
 

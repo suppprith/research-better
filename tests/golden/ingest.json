@@ -163,6 +163,36 @@
       "text": "Dense encoders were\nintroduced later and have received considerable attention since [3]."
     },
     {
+      "id": "s-3bf241fbf33f",
+      "section": "sec-75d1e5190632",
+      "text": "Furthermore, the question of evaluation has been raised repeatedly [4]."
+    },
+    {
+      "id": "s-cbf2a8549cf0",
+      "section": "sec-75d1e5190632",
+      "text": "The\nretracted analysis of Vogel and Prasad remains widely cited despite its\nwithdrawal, and its conclusions continue to circulate."
+    },
+    {
+      "id": "s-fffd5c6e64ce",
+      "section": "sec-75d1e5190632",
+      "text": "Moreover, benchmark design has attracted a literature of its own."
+    },
+    {
+      "id": "s-ad7eb44db298",
+      "section": "sec-75d1e5190632",
+      "text": "Several\nauthors have argued that saturation makes comparison meaningless."
+    },
+    {
+      "id": "s-b4378564e0cf",
+      "section": "sec-75d1e5190632",
+      "text": "Additionally, reproducibility work has grown in volume."
+    },
+    {
+      "id": "s-94118bb4905c",
+      "section": "sec-75d1e5190632",
+      "text": "Few of these studies\nagree on what counts as a successful replication."
+    },
+    {
       "id": "s-2a3966b33e1e",
       "section": "sec-75d1e5190632",
       "text": "Search engines are used by billions of people every day."
@@ -176,16 +206,6 @@
       "id": "s-74b270fb8754",
       "section": "sec-75d1e5190632",
       "text": "Indexing at that scale requires\nsubstantial engineering effort."
-    },
-    {
-      "id": "s-3bf241fbf33f",
-      "section": "sec-75d1e5190632",
-      "text": "Furthermore, the question of evaluation has been raised repeatedly [4]."
-    },
-    {
-      "id": "s-cbf2a8549cf0",
-      "section": "sec-75d1e5190632",
-      "text": "The\nretracted analysis of Vogel and Prasad remains widely cited despite its\nwithdrawal, and its conclusions continue to circulate."
     },
     {
       "id": "s-351a3b31a197",

@@ -13,9 +13,10 @@ import pytest
 
 from conftest import GOOD_PARAGRAPH_OPENER
 from golden_harness import Golden, GoldenMismatchError, diff
+from research_better import fluff
 from research_better.model import Document
 
-PASSES = ("ingest",)
+PASSES = ("ingest", "fluff")
 """Every pass that produces a reviewable artifact. Extended as passes land."""
 
 
@@ -42,6 +43,10 @@ def summarize_ingest(document: Document) -> dict[str, object]:
 
 def test_ingest_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
     golden.check("ingest", summarize_ingest(bad_paper))
+
+
+def test_fluff_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
+    golden.check("fluff", [finding.to_json() for finding in fluff.analyse(bad_paper)])
 
 
 def test_every_pass_has_a_golden_file(golden: Golden) -> None:

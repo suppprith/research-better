@@ -18,13 +18,13 @@ The paper is not subtle. It is a test instrument, not a writing sample.
 | Nominalization | Introduction paragraph 2 ("performed an analysis of") |
 | Stated contribution the body never supports | Introduction paragraph 3 claims a formal proof of convergence. No proof, theorem, or derivation appears anywhere |
 | Citation-free superlative | Results paragraph 1 ("significantly outperforms", "best results reported to date", "novel", "substantially") with no test statistic and no citation |
-| Throat-clearing transition run | Related Work paragraph 3, Method paragraph 2, and Results paragraph 1 open with Furthermore, Moreover, Additionally |
+| Throat-clearing transition run | Related Work paragraphs 2, 3, and 4, consecutive, opening with Furthermore, Moreover, Additionally. Method paragraph 2 and Results paragraph 1 also open this way but stand alone, and a lone transition is not a defect |
 | Uniform sentence rhythm | Method paragraph 1, five sentences between 11 and 13 words |
 | Tricolon | Method paragraph 2 ("efficient, scalable, and robust") |
 | Balanced-clause template | Method paragraph 2 ("Not only does it reduce latency, but it also improves recall") |
 | Empty forward reference | Method paragraph 2 ("As will be discussed later") with no later discussion |
 | Section-closing restatement | Conclusion restates the Introduction's opening claim with no new content |
-| Orphan paragraphs | Related Work paragraph 2 (search engines), Method paragraph 3 (databases), Results paragraph 3 (peer review). None supports any claim in the paper |
+| Orphan paragraphs | Related Work paragraph 5 (search engines), Method paragraph 3 (databases), Results paragraph 3 (peer review). None supports any claim in the paper |
 
 ### Citations
 
