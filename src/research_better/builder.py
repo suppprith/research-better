@@ -51,6 +51,7 @@ class DocumentBuilder:
         self._sentences: list[Sentence] = []
         self._citations: list[Citation] = []
         self._floats: list[Float] = []
+        self._metadata: dict[str, str] = {}
 
     # Span construction -----------------------------------------------------
 
@@ -148,7 +149,9 @@ class DocumentBuilder:
         self._floats.append(item)
         return item
 
-    def add_citation(self, key: str, raw: str, span: Span) -> Citation:
+    def add_citation(
+        self, key: str, raw: str, span: Span, in_bibliography: bool = False
+    ) -> Citation:
         """Record one citation key. Multi-key commands call this once per key."""
         section_key = section_path_key(self._open[-1].path) if self._open else ""
         citation = Citation(
@@ -156,9 +159,14 @@ class DocumentBuilder:
             key=key,
             raw=raw,
             span=span,
+            in_bibliography=in_bibliography,
         )
         self._citations.append(citation)
         return citation
+
+    def set_metadata(self, key: str, value: str) -> None:
+        """Record a document-level fact the format declares out of band."""
+        self._metadata[key] = value
 
     # Freeze ----------------------------------------------------------------
 
@@ -175,6 +183,7 @@ class DocumentBuilder:
             sentences=tuple(self._sentences),
             citations=tuple(citations),
             floats=tuple(self._floats),
+            metadata=dict(self._metadata),
         )
 
     def _close_section_spans(self) -> list[Section]:
@@ -214,10 +223,11 @@ class DocumentBuilder:
         attached: list[Citation] = []
 
         for citation in self._citations:
-            position = bisect_right(starts, citation.span.char_start) - 1
             sentence_id: str | None = None
-            if position >= 0 and ordered[position].span.char_end >= citation.span.char_end:
-                sentence_id = ordered[position].id
+            if not citation.in_bibliography:
+                position = bisect_right(starts, citation.span.char_start) - 1
+                if position >= 0 and ordered[position].span.char_end >= citation.span.char_end:
+                    sentence_id = ordered[position].id
             attached.append(
                 Citation(
                     id=citation.id,
@@ -226,6 +236,7 @@ class DocumentBuilder:
                     span=citation.span,
                     sentence_id=sentence_id,
                     resolved=citation.resolved,
+                    in_bibliography=citation.in_bibliography,
                 )
             )
         return attached

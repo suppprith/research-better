@@ -65,6 +65,10 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 # papers contain them and a sentence can end on one. RUF001 reads those as
 # lookalikes for ASCII quotes, which here is the point rather than a mistake.
 "src/research_better/segmentation.py" = ["RUF001"]
+# Citation ranges in a real paper are written with an en dash as often as with
+# a hyphen, so the pattern has to accept both. RUF001 reads the en dash as a
+# typo for a hyphen, which is exactly the case being matched.
+"src/research_better/ingest/citations.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.11"

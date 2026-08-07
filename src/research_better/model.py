@@ -157,6 +157,14 @@ class Citation:
     span: Span
     sentence_id: str | None = None
     resolved: ResolvedWork | None = None
+    in_bibliography: bool = False
+    """True for an entry in the reference list, false for a use in the text.
+
+    Both are needed and they are checked for different things. A use is checked
+    against the claim it supports. An entry is checked for existing at all, and
+    for being cited somewhere. An entry with no matching use is a dangling
+    reference, and a use with no matching entry will not compile.
+    """
 
 
 @dataclass(frozen=True, slots=True)
@@ -198,6 +206,10 @@ class Document:
     sentences: tuple[Sentence, ...] = ()
     citations: tuple[Citation, ...] = ()
     floats: tuple[Float, ...] = ()
+    metadata: dict[str, str] = field(default_factory=dict)
+    """Title, author, and anything else the format declares out of band. Front
+    matter is metadata, not prose, so it is never segmented or analysed."""
+
     _index: dict[str, object] = field(default_factory=dict, repr=False, compare=False, init=False)
 
     def __post_init__(self) -> None:
