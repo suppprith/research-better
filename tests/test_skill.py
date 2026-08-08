@@ -223,6 +223,4 @@ def test_a_clean_paper_does_not_become_a_good_one(final_analysis: str) -> None:
     """Reporting that the bibliography resolved is a complete answer. It is
     also not a verdict, and the reference has to say so or the model supplies
     one."""
-    assert "not \"your paper is good\"" in final_analysis or (
-        'not "your paper is good"' in final_analysis
-    )
+    assert 'not "your paper is good"' in final_analysis
