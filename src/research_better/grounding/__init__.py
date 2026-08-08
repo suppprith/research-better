@@ -23,6 +23,12 @@ from research_better.grounding.claims import (
 )
 from research_better.grounding.entries import BibliographyEntry, bibliography, parse_entry
 from research_better.grounding.fulltext import SourceText, retrieve
+from research_better.grounding.originality import (
+    OriginalityReport,
+    Overlap,
+    analyse_originality,
+)
+from research_better.grounding.originality import to_findings as originality_findings
 from research_better.grounding.verify import (
     AUTHOR_OVERLAP,
     TITLE_RELATED,
@@ -85,6 +91,35 @@ def check_claims(
         sources_attempted=len(texts),
         source_notes=notes,
     )
+
+
+def check_originality(
+    document: Document,
+    client: PoliteClient,
+    adapters: list | None = None,
+    own_prior_keys: set[str] | None = None,
+) -> OriginalityReport:
+    """Compare the draft against the full text of everything it cites.
+
+    Reuses the retrieval built for claim support, which is what makes this
+    possible at all without a commercial similarity service. It also means the
+    limits are the same, and they are reported rather than implied.
+    """
+    entries = {entry.key: entry for entry in bibliography(document.citations)}
+    cited = {
+        citation.key for citation in document.citations if not citation.in_bibliography
+    } or set(entries)
+
+    sources: dict[str, tuple[SourceText, str | None, str | None]] = {}
+    for key in sorted(cited):
+        entry = entries.get(key)
+        sources[key] = (
+            _source_for(client, entry, key, adapters),
+            entry.title if entry else None,
+            entry.doi if entry else None,
+        )
+
+    return analyse_originality(document, sources, own_prior_keys)
 
 
 def _source_for(
@@ -201,9 +236,17 @@ __all__ = [
     "BibliographyEntry",
     "CitationCheck",
     "GroundingReport",
+    "OriginalityReport",
+    "Overlap",
+    "SourceText",
     "Verdict",
     "analyse",
+    "analyse_originality",
     "bibliography",
+    "check_claims",
+    "check_originality",
+    "claim_findings",
+    "originality_findings",
     "parse_entry",
     "title_similarity",
     "to_findings",

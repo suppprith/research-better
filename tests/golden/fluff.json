@@ -464,8 +464,8 @@
   {
     "advisory": false,
     "char_range": [
-      3103,
-      3117
+      3565,
+      3579
     ],
     "matched_text": "significantly",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -478,8 +478,8 @@
   {
     "advisory": false,
     "char_range": [
-      3117,
-      3132
+      3579,
+      3594
     ],
     "matched_text": "outperforms all",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -492,8 +492,8 @@
   {
     "advisory": false,
     "char_range": [
-      3163,
-      3171
+      3625,
+      3633
     ],
     "matched_text": "the best",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -506,8 +506,8 @@
   {
     "advisory": false,
     "char_range": [
-      3208,
-      3213
+      3670,
+      3675
     ],
     "matched_text": "novel",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -520,8 +520,8 @@
   {
     "advisory": false,
     "char_range": [
-      3227,
-      3241
+      3689,
+      3703
     ],
     "matched_text": "substantially",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -534,8 +534,8 @@
   {
     "advisory": true,
     "char_range": [
-      4009,
-      4066
+      4471,
+      4528
     ],
     "matched_text": "A unified\nframework for adaptive retrieval was presented.",
     "note": "This sentence introduces no word the section's opening sentence did not already carry. It restates rather than concludes, so cutting it loses nothing.",

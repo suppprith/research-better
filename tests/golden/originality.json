@@ -1,0 +1,43 @@
+{
+  "boilerplate_ignored": 0,
+  "coverage_note": "Compared against 4 source(s): 1 as full text and 3 as abstract only, which sees almost none of the paper. 2 cited source(s) could not be retrieved and were not compared. This is not a plagiarism service. It cannot see paywalled work, most books, unindexed theses, or the web. A clean result means no overlap was found in what could be checked, and nothing about what could not.",
+  "matches": [
+    {
+      "char_range": [
+        3119,
+        3261
+      ],
+      "distinctiveness": 0.909,
+      "length": 11,
+      "matched_text": "topical size balanced document groups a query visits using two signals",
+      "note": "The sentence cites a source and reproduces its wording without quotation marks. This is the most common honest mistake in academic writing and it is also the one that gets flagged as plagiarism. The fix is quotation marks around the borrowed words.",
+      "source_doi": null,
+      "source_locator": "https://arxiv.org/html/2608.00229",
+      "source_title": "Hierarchical BM25: Lexical Search at Billion-Document Scale",
+      "span_id": "s-6a90dea9ce33",
+      "verdict": "NEEDS_QUOTE_MARKS"
+    },
+    {
+      "char_range": [
+        2906,
+        3117
+      ],
+      "distinctiveness": 0.6,
+      "length": 30,
+      "matched_text": "two signals the total frequency of each query term within a group and for informative terms spread too thinly across groups for frequency totals to reflect whether several of them",
+      "note": "This run of words appears in a published source and the sentence carries no citation. Quote it and cite it, or write it in your own words.",
+      "source_doi": null,
+      "source_locator": "https://arxiv.org/html/2608.00229",
+      "source_title": "Hierarchical BM25: Lexical Search at Billion-Document Scale",
+      "span_id": "s-a2c71ef9faad",
+      "verdict": "UNATTRIBUTED_OVERLAP"
+    }
+  ],
+  "sources_compared": 4,
+  "sources_unavailable": 2,
+  "sources_with_full_text": 1,
+  "unavailable_titles": [
+    "Adaptive Query Expansion Under Drift",
+    "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children"
+  ]
+}

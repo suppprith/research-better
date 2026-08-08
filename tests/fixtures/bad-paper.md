@@ -62,6 +62,16 @@ general. It is not only cheaper to run but also easier to deploy. As will be
 discussed later, the theoretical properties of this design are worth examining
 in detail.
 
+Our selection uses two signals, the total frequency of each query term within a
+group, and for informative terms spread too thinly across groups for frequency
+totals to reflect, whether several of them co-occur.
+
+As prior work describes it, a resident coarse index selects which topical size
+balanced document groups a query visits, using two signals [8].
+
+The remainder of this paper is organized as follows. Section 4 reports results
+and Section 5 concludes.
+
 Databases have existed since the 1960s. Relational algebra provides a formal
 foundation for query languages. Many systems in production today still rely on
 it.

@@ -38,6 +38,20 @@ The paper is not subtle. It is a test instrument, not a writing sample.
 | `[6]` | A real book. Books are indexed unevenly, and this one is the check that a book does not produce a false signal | `VERIFIED` |
 | `[7]` | An invented thesis. Theses are not indexed at all, so the verdict must explain that rather than insinuate fabrication | `NOT_FOUND`, flagged `likely_unindexed` |
 
+| `[8]` | Real, recent, and on arXiv with rendered HTML, so its full text is retrievable. Cited twice in Related Work: once for something it establishes and once for something it explicitly defers | `VERIFIED`, plus one `SUPPORTED` and one `PARTIAL` claim |
+
+### Originality cases
+
+Method paragraph 3 lifts a run of words verbatim from `[8]` with no citation
+(`UNATTRIBUTED_OVERLAP`). Method paragraph 4 reproduces another run with a `[8]`
+citation and no quotation marks (`NEEDS_QUOTE_MARKS`), which is the most common
+honest mistake in academic writing and the one that gets flagged as plagiarism.
+Method paragraph 5 is standard framing boilerplate and must produce nothing.
+
+Self-overlap has no fixture case, because the fixture's author does not resolve
+to a real person with prior work. It is covered by unit tests against a
+synthetic prior source instead.
+
 Entries `[6]` and `[7]` exist for one reason: a tool that reports an unindexed
 work as missing without saying why is making a fabrication insinuation it cannot
 support, and authors would be right to stop reading it. `NOT_FOUND` is never

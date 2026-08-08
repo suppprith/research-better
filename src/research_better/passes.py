@@ -116,6 +116,21 @@ def _ground(context: PassContext) -> PassResult:
     )
 
 
+def _originality(context: PassContext) -> PassResult:
+    report = grounding.check_originality(context.document, context.require_client("originality"))
+    findings = grounding.originality_findings(report)
+    return PassResult(
+        payload=report.to_json(),
+        findings=tuple(findings),
+        # Counts, never a share. A percentage here would be read as a
+        # similarity score whatever it was labelled.
+        summary=(
+            f"{len(report.matches)} overlap(s) against {report.sources_compared} source(s), "
+            f"{report.sources_unavailable} not retrievable"
+        ),
+    )
+
+
 PASSES: dict[str, Pass] = {
     "ingest": Pass(
         name="ingest",
@@ -157,6 +172,15 @@ PASSES: dict[str, Pass] = {
         run=_ground,
         needs_network=True,
     ),
+    "originality": Pass(
+        name="originality",
+        artifact="originality",
+        help="unattributed overlap with work the tool can actually read",
+        implemented=True,
+        phase="P3 grounding and citation verification",
+        run=_originality,
+        needs_network=True,
+    ),
     "ask": Pass(
         name="ask",
         artifact="reviewer-questions",
@@ -180,7 +204,17 @@ PASSES: dict[str, Pass] = {
     ),
 }
 
-RUN_ORDER = ("ingest", "voice", "novelty", "ground", "fluff", "ask", "edit", "report")
+RUN_ORDER = (
+    "ingest",
+    "voice",
+    "novelty",
+    "ground",
+    "originality",
+    "fluff",
+    "ask",
+    "edit",
+    "report",
+)
 """The order `run` walks. Ingest first because everything reads its output, and
 voice before any pass that could propose words."""
 

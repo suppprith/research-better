@@ -182,8 +182,9 @@ def test_a_section_below_the_threshold_gets_no_profile_of_its_own() -> None:
 
 def test_a_long_section_gets_its_own_profile(bad_paper) -> None:
     report = voice.extract(bad_paper)
-    assert [p.label for p in report.sections] == ["Introduction"]
-    assert report.sections[0].word_count >= MINIMUM_SECTION_WORDS
+    assert [p.label for p in report.sections] == ["Introduction", "Method"]
+    for profile in report.sections:
+        assert profile.word_count >= MINIMUM_SECTION_WORDS
 
 
 def test_a_short_section_falls_back_to_the_global_profile(bad_paper) -> None:

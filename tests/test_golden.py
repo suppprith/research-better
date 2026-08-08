@@ -19,7 +19,7 @@ from research_better.model import Document
 from research_better.net import HttpCache, PoliteClient
 from research_better.sources import ArxivAdapter, CrossrefAdapter, OpenAlexAdapter
 
-PASSES = ("ingest", "fluff", "voice", "grounding")
+PASSES = ("ingest", "fluff", "voice", "grounding", "originality")
 """Every pass that produces a reviewable artifact. Extended as passes land."""
 
 
@@ -61,6 +61,12 @@ def test_grounding_matches_its_golden(bad_paper: Document, golden: Golden) -> No
     with PoliteClient(cache, offline=True) as client:
         adapters = [OpenAlexAdapter(), CrossrefAdapter(), ArxivAdapter()]
         golden.check("grounding", grounding.analyse(bad_paper, client, adapters).to_json())
+
+
+def test_originality_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
+    cache = HttpCache(Path(__file__).parent / "fixtures" / "http", ignore_ttl=True)
+    with PoliteClient(cache, offline=True) as client:
+        golden.check("originality", grounding.check_originality(bad_paper, client).to_json())
 
 
 def test_every_pass_has_a_golden_file(golden: Golden) -> None:

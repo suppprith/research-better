@@ -51,10 +51,102 @@
         ]
       ],
       "word_count": 165
+    },
+    {
+      "citations_per_paragraph": 0.17,
+      "connectives": [
+        [
+          "moreover",
+          1
+        ]
+      ],
+      "hedges_per_hundred_words": 0.0,
+      "hyphenation": [
+        [
+          "cooccur",
+          "co-occur"
+        ]
+      ],
+      "label": "Method",
+      "oxford_comma": "always",
+      "passive_ratio": 0.294,
+      "person": "we",
+      "scope": "sec-327cd534431f",
+      "sentence_lengths": {
+        "count": 17,
+        "mean": 12.06,
+        "p10": 8.0,
+        "p90": 16.0,
+        "stdev": 6.69
+      },
+      "spelling": "unknown",
+      "terminology": [
+        [
+          "frequency",
+          4
+        ],
+        [
+          "query",
+          3
+        ],
+        [
+          "using",
+          3
+        ],
+        [
+          "Section",
+          2
+        ],
+        [
+          "design",
+          2
+        ],
+        [
+          "document",
+          2
+        ],
+        [
+          "groups",
+          2
+        ],
+        [
+          "index",
+          2
+        ],
+        [
+          "results",
+          2
+        ],
+        [
+          "signals",
+          2
+        ],
+        [
+          "term",
+          2
+        ],
+        [
+          "terms",
+          2
+        ],
+        [
+          "two",
+          2
+        ],
+        [
+          "two signals",
+          2
+        ],
+        [
+          "co-occur",
+          1
+        ]
+      ],
+      "word_count": 202
     }
   ],
   "whole_paper": {
-    "citations_per_paragraph": 0.5,
+    "citations_per_paragraph": 0.47,
     "connectives": [
       [
         "moreover",
@@ -65,8 +157,12 @@
         1
       ]
     ],
-    "hedges_per_hundred_words": 1.38,
+    "hedges_per_hundred_words": 1.23,
     "hyphenation": [
+      [
+        "cooccur",
+        "co-occur"
+      ],
       [
         "firstpass",
         "first-pass"
@@ -90,11 +186,11 @@
     "person": "we",
     "scope": "whole_paper",
     "sentence_lengths": {
-      "count": 47,
-      "mean": 12.55,
+      "count": 51,
+      "mean": 13.02,
       "p10": 8.0,
-      "p90": 21.0,
-      "stdev": 5.55
+      "p90": 23.0,
+      "stdev": 6.32
     },
     "spelling": "british",
     "terminology": [
@@ -103,7 +199,15 @@
         7
       ],
       [
+        "results",
+        5
+      ],
+      [
         "adaptive",
+        4
+      ],
+      [
+        "frequency",
         4
       ],
       [
@@ -111,7 +215,7 @@
         4
       ],
       [
-        "results",
+        "query",
         4
       ],
       [
@@ -127,11 +231,35 @@
         3
       ],
       [
+        "document",
+        3
+      ],
+      [
         "framework",
         3
       ],
       [
+        "groups",
+        3
+      ],
+      [
+        "index",
+        3
+      ],
+      [
         "method",
+        3
+      ],
+      [
+        "paper",
+        3
+      ],
+      [
+        "using",
+        3
+      ],
+      [
+        "work",
         3
       ],
       [
@@ -151,6 +279,14 @@
         2
       ],
       [
+        "Section",
+        2
+      ],
+      [
+        "across",
+        2
+      ],
+      [
         "analysis",
         2
       ],
@@ -167,7 +303,7 @@
         2
       ],
       [
-        "document",
+        "describes",
         2
       ],
       [
@@ -183,19 +319,11 @@
         2
       ],
       [
-        "frequency",
-        2
-      ],
-      [
         "gain",
         2
       ],
       [
         "grown",
-        2
-      ],
-      [
-        "index",
         2
       ],
       [
@@ -227,15 +355,11 @@
         2
       ],
       [
-        "paper",
-        2
-      ],
-      [
         "presented",
         2
       ],
       [
-        "query",
+        "prior",
         2
       ],
       [
@@ -251,7 +375,19 @@
         2
       ],
       [
+        "remainder",
+        2
+      ],
+      [
         "remains",
+        2
+      ],
+      [
+        "reports",
+        2
+      ],
+      [
+        "resident",
         2
       ],
       [
@@ -267,11 +403,39 @@
         2
       ],
       [
+        "several",
+        2
+      ],
+      [
+        "signals",
+        2
+      ],
+      [
         "since",
         2
       ],
       [
+        "size",
+        2
+      ],
+      [
+        "term",
+        2
+      ],
+      [
+        "terms",
+        2
+      ],
+      [
         "three",
+        2
+      ],
+      [
+        "two",
+        2
+      ],
+      [
+        "two signals",
         2
       ],
       [
@@ -280,14 +444,6 @@
       ],
       [
         "unified framework",
-        2
-      ],
-      [
-        "using",
-        2
-      ],
-      [
-        "work",
         2
       ],
       [
@@ -323,6 +479,10 @@
         1
       ],
       [
+        "co-occur",
+        1
+      ],
+      [
         "dense",
         1
       ],
@@ -339,10 +499,6 @@
         1
       ],
       [
-        "several",
-        1
-      ],
-      [
         "state-of-the-art",
         1
       ],
@@ -351,6 +507,6 @@
         1
       ]
     ],
-    "word_count": 579
+    "word_count": 650
   }
 }

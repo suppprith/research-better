@@ -30,6 +30,10 @@
     },
     {
       "in_bibliography": false,
+      "key": "8"
+    },
+    {
+      "in_bibliography": false,
       "key": "2"
     },
     {
@@ -312,6 +316,26 @@
       "id": "s-fa87d5be76f4",
       "section": "sec-327cd534431f",
       "text": "As will be\ndiscussed later, the theoretical properties of this design are worth examining\nin detail."
+    },
+    {
+      "id": "s-a2c71ef9faad",
+      "section": "sec-327cd534431f",
+      "text": "Our selection uses two signals, the total frequency of each query term within a\ngroup, and for informative terms spread too thinly across groups for frequency\ntotals to reflect, whether several of them co-occur."
+    },
+    {
+      "id": "s-6a90dea9ce33",
+      "section": "sec-327cd534431f",
+      "text": "As prior work describes it, a resident coarse index selects which topical size\nbalanced document groups a query visits, using two signals [8]."
+    },
+    {
+      "id": "s-7df68371ab16",
+      "section": "sec-327cd534431f",
+      "text": "The remainder of this paper is organized as follows."
+    },
+    {
+      "id": "s-d7b96e7c917c",
+      "section": "sec-327cd534431f",
+      "text": "Section 4 reports results\nand Section 5 concludes."
     },
     {
       "id": "s-ab3494b1c005",
