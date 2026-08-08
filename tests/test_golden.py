@@ -14,12 +14,24 @@ import pytest
 
 from conftest import GOOD_PARAGRAPH_OPENER
 from golden_harness import Golden, GoldenMismatchError, diff
-from research_better import fluff, grounding, novelty, reviewer, voice
+from research_better import __version__, fluff, grounding, novelty, reviewer, voice
+from research_better.artifacts import Artifact
+from research_better.edit import ledger
+from research_better.edit.gate import EvidenceBundle, evidence_ids
 from research_better.model import Document
 from research_better.net import HttpCache, PoliteClient
 from research_better.sources import ArxivAdapter, CrossrefAdapter, OpenAlexAdapter
 
-PASSES = ("ingest", "fluff", "voice", "grounding", "originality", "novelty", "reviewer-questions")
+PASSES = (
+    "ingest",
+    "fluff",
+    "voice",
+    "grounding",
+    "originality",
+    "novelty",
+    "reviewer-questions",
+    "edits",
+)
 """Every pass that produces a reviewable artifact. Extended as passes land."""
 
 
@@ -76,6 +88,43 @@ def test_originality_matches_its_golden(bad_paper: Document, golden: Golden) -> 
     cache = HttpCache(Path(__file__).parent / "fixtures" / "http", ignore_ttl=True)
     with PoliteClient(cache, offline=True) as client:
         golden.check("originality", grounding.check_originality(bad_paper, client).to_json())
+
+
+def summarize_edits(document: Document) -> dict[str, object]:
+    """The ledger without offsets. Ids and both sides of every change already
+    pin what the pass proposed, and a reworded fixture paragraph would move
+    every offset in the file and bury the behaviour change under them."""
+    payloads = {
+        "fluff": [finding.to_json() for finding in fluff.analyse(document)],
+        "novelty": novelty.analyse(document, confirmed=True).to_json(),
+        # The ledger reads neither, and the gate is exercised for real in
+        # test_edit_gate.py. Empty here keeps this golden off the network.
+        "grounding": {"citations": {"checks": []}, "claims": {"checks": []}},
+        "voice": voice.extract(document).to_json(),
+    }
+    bundle = EvidenceBundle(
+        source_hash=document.source_hash,
+        artifacts={
+            name: Artifact(name, __version__, document.source_hash, "bad-paper.md", "", payload)
+            for name, payload in payloads.items()
+        },
+        pointers=frozenset(
+            pointer for name, payload in payloads.items() for pointer in evidence_ids(name, payload)
+        ),
+        offline=True,
+    )
+
+    built = ledger.build(document, bundle)
+    payload = built.to_json()
+    for entry in payload["edits"]:
+        entry.pop("char_range")
+    for entry in payload["dropped"]:
+        entry["edit"].pop("char_range")
+    return payload
+
+
+def test_edits_match_their_golden(bad_paper: Document, golden: Golden) -> None:
+    golden.check("edits", summarize_edits(bad_paper))
 
 
 def test_every_pass_has_a_golden_file(golden: Golden) -> None:

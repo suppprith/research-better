@@ -73,7 +73,9 @@ def test_ingest_alone_never_reports_findings(draft: Path) -> None:
 def test_each_implemented_pass_writes_its_artifact(draft: Path) -> None:
     store = ArtifactStore(draft)
     for name, entry in PASSES.items():
-        if not entry.implemented:
+        # A gated pass needs its evidence assembled first. That path is covered
+        # in test_edit_ledger.py, where the fixture can build it.
+        if not entry.implemented or entry.preflight is not None:
             continue
         main([name, str(draft), "--quiet"])
         assert store.path_for(entry.artifact).is_file(), f"{name} wrote no artifact"
@@ -84,7 +86,25 @@ def test_run_executes_every_implemented_pass(draft: Path) -> None:
     store = ArtifactStore(draft)
     for name in RUN_ORDER:
         entry = PASSES[name]
-        assert store.path_for(entry.artifact).is_file() is entry.implemented
+        expected = entry.implemented and entry.preflight is None
+        assert store.path_for(entry.artifact).is_file() is expected
+
+
+def test_run_reports_a_gated_pass_instead_of_aborting(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # A survey that stops partway through is less useful than one that reports
+    # its own gaps, so `run` names the pass and the reason and carries on.
+    assert main(["run", str(draft)]) == EXIT_FINDINGS
+    output = capsys.readouterr().out
+    assert "not run, edit:" in output
+    assert "--confirm-claim" in output
+
+
+def test_asking_for_a_gated_pass_by_name_is_an_error(draft: Path) -> None:
+    # Named directly, the author wanted that pass and has to be told it cannot
+    # run, with an exit code that says the tool could not do its job.
+    assert main(["edit", str(draft), "--quiet"]) == EXIT_ERROR
 
 
 def test_ingest_runs_before_the_passes_that_read_it() -> None:

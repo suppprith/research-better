@@ -45,10 +45,22 @@ class PassContext:
     the claim is wrong every cut downstream is wrong, so nothing acts on an
     unconfirmed one."""
 
+    store: ArtifactStore | None = None
+    """Only the edit pass reads it. Every other pass writes its artifact and
+    never looks at anybody else's, which is what keeps a change to one pass from
+    breaking another."""
+
+    interactive: bool = False
+
     def require_client(self, pass_name: str) -> PoliteClient:
         if self.client is None:
             raise RuntimeError(f"the {pass_name} pass needs an HTTP client and was given none")
         return self.client
+
+    def require_store(self, pass_name: str) -> ArtifactStore:
+        if self.store is None:
+            raise RuntimeError(f"the {pass_name} pass needs an artifact store and was given none")
+        return self.store
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +71,16 @@ class PassResult:
     markdown: str | None = None
     """Set when the pass has a human-readable form worth writing beside the
     JSON. Reviewer questions are meant to be read, not parsed."""
+
+    attachments: tuple[tuple[str, str], ...] = ()
+    """(suffix, body) pairs written beside the JSON under the same name. A patch
+    belongs in a `.diff` file that `git apply` and every editor already
+    understand, not wrapped in a JSON string."""
+
+    counts_as_finding: bool = False
+    """Set by a pass that reports something worth a non-zero exit without
+    emitting `Finding` objects. The edit pass proposes changes rather than
+    findings, and a proposed change is still something a CI check should see."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -206,6 +228,32 @@ def _originality(context: PassContext) -> PassResult:
     )
 
 
+def _edit(context: PassContext) -> PassResult:
+    store = context.require_store("edit")
+    bundle = edit_layer.gather(store, context.document.source_hash)
+    decisions = edit_layer.load_decisions(store)
+    ledger = edit_layer.build(context.document, bundle, edit_layer.rejected_ids(decisions))
+
+    if context.interactive:
+        decisions = edit_layer.review(ledger, input, print, decisions)
+        edit_layer.save_decisions(store, decisions, context.document.source_hash)
+        # Rebuilt rather than filtered, so a row rejected in this session leaves
+        # the ledger the same way one rejected last week does.
+        ledger = edit_layer.build(context.document, bundle, edit_layer.rejected_ids(decisions))
+
+    patch = edit_layer.to_diff(context.document, ledger.edits)
+    return PassResult(
+        payload=ledger.to_json(),
+        summary=(
+            f"{len(ledger.edits)} edit(s) proposed, {ledger.words_delta:+d} words, "
+            f"{len(ledger.dropped)} not proposed"
+        ),
+        markdown=edit_layer.to_summary(ledger),
+        attachments=((".diff", patch),) if patch else (),
+        counts_as_finding=bool(ledger.edits),
+    )
+
+
 def _require_evidence(context: PassContext, store: ArtifactStore) -> None:
     """The evidence gate, checked before the edit pass is allowed to start.
 
@@ -279,8 +327,9 @@ PASSES: dict[str, Pass] = {
         name="edit",
         artifact="edits",
         help="turn findings into a patch, applied only with --apply",
-        implemented=False,
+        implemented=True,
         phase="P5 surgical edit",
+        run=_edit,
         preflight=_require_evidence,
     ),
     "report": Pass(

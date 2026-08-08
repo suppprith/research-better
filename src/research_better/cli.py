@@ -146,6 +146,14 @@ def build_parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="write the patch to the draft instead of only reporting it",
             )
+            sub.add_argument(
+                "--interactive",
+                action="store_true",
+                help=(
+                    "walk the proposed edits one at a time. Decisions are kept, so "
+                    "a change you reject is not offered again"
+                ),
+            )
         if name == "novelty":
             sub.add_argument(
                 "--confirm-claim",
@@ -185,13 +193,6 @@ def _run_one(
     source_hash: str,
 ) -> tuple[int, dict[str, object]]:
     entry = PASSES[name]
-    # Before the not-built-yet refusal, so a pass with a precondition reports
-    # the precondition. Told "the edit pass is not built" when the real problem
-    # is a stale artifact, an author would wait for a release that would not
-    # have helped them.
-    if entry.preflight is not None:
-        entry.preflight(context, store)
-
     if not entry.implemented or entry.run is None:
         raise ResearchBetterError(
             f"the {name} pass is not built yet. It lands in {entry.phase}. "
@@ -203,10 +204,12 @@ def _run_one(
     target = store.write(entry.artifact, result.payload, source_hash, offline=context.offline)
     if result.markdown is not None:
         store.write_text(entry.artifact, result.markdown, source_hash)
+    for suffix, body in result.attachments:
+        store.write_text(entry.artifact, body, source_hash, suffix=suffix)
     _emit(console, name, result, target)
 
     return (
-        EXIT_FINDINGS if result.findings else EXIT_CLEAN,
+        EXIT_FINDINGS if result.findings or result.counts_as_finding else EXIT_CLEAN,
         {
             "pass": name,
             "artifact": str(target),
@@ -248,6 +251,7 @@ def run(args: argparse.Namespace, console: Console) -> int:
 
     status = EXIT_CLEAN
     report: list[dict[str, object]] = []
+    blocked: list[tuple[str, str]] = []
     # The client is built only when a pass in this run actually needs one, so a
     # purely local check never opens a socket or creates a cache directory.
     needs_network = any(PASSES[name].needs_network for name in names)
@@ -269,26 +273,55 @@ def run(args: argparse.Namespace, console: Console) -> int:
             refresh=args.refresh,
             venue=args.venue,
             claim_confirmed=bool(getattr(args, "confirm_claim", False)),
+            store=store,
+            interactive=bool(getattr(args, "interactive", False)),
         )
         for name in names:
+            entry_pass = PASSES[name]
+            if entry_pass.preflight is not None:
+                try:
+                    entry_pass.preflight(context, store)
+                except ResearchBetterError as error:
+                    # Asked for this pass by name, the author gets the error and
+                    # exit 2. Asked for everything, they get told which pass did
+                    # not run and why, because a survey that aborts partway
+                    # through is less useful than one that reports its gaps.
+                    if args.command != "run":
+                        raise
+                    blocked.append((name, str(error)))
+                    continue
+
             outcome, entry = _run_one(name, context, store, console, source_hash)
             status = max(status, outcome)
             report.append(entry)
 
     if args.command == "run":
+        # Saying what did not run is the same commitment as never printing a
+        # total score. Silence about an unrun pass reads as a clean result.
         skipped = [name for name in RUN_ORDER if not PASSES[name].implemented]
         if skipped:
-            # Saying what did not run is the same commitment as never printing a
-            # total score. Silence about an unrun pass reads as a clean result.
             console.say()
             console.say(
                 console.style.dim(
                     "not checked, these passes are not built yet: " + ", ".join(skipped)
                 )
             )
+        for name, reason in blocked:
+            console.say()
+            console.say(console.style.dim(f"not run, {name}: {reason}"))
 
     if args.json:
-        print(json.dumps({"passes": report, "exit_code": status}, indent=2, sort_keys=True))
+        print(
+            json.dumps(
+                {
+                    "passes": report,
+                    "blocked": [{"pass": name, "reason": reason} for name, reason in blocked],
+                    "exit_code": status,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
 
     return status
 

@@ -121,14 +121,19 @@ class ArtifactStore:
         Markdown cannot hold the JSON envelope, so the same four fields go in a
         comment. A reader who opens report.md still learns which draft it
         describes.
+
+        The comment syntax follows the suffix. A patch has to survive `git
+        apply`, which skips `#` preamble lines and would choke on markup, so
+        provenance is never bought at the cost of the file being usable.
         """
         target = self.path_for(name, suffix)
         target.parent.mkdir(parents=True, exist_ok=True)
-        header = (
-            f"<!-- research-better {__version__} | source: {self.draft.name} | "
+        provenance = (
+            f"research-better {__version__} | source: {self.draft.name} | "
             f"hash: {source_hash[:16]} | generated: "
-            f"{datetime.now(UTC).isoformat(timespec='seconds')} -->\n\n"
+            f"{datetime.now(UTC).isoformat(timespec='seconds')}"
         )
+        header = f"<!-- {provenance} -->\n\n" if suffix == ".md" else f"# {provenance}\n"
         target.write_text(header + body, encoding="utf-8", newline="\n")
         return target
 
