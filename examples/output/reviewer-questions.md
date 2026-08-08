@@ -13,7 +13,7 @@ was assumed. Questions that depend on venue policy say so.
 
 > Our primary contribution is a formal proof that adaptive retrieval converges under bounded query drift.
 
-**Why a reviewer asks this.** The paper claims a contribution that nothing in the body picks up: bounded, contribution, converges, drift, primary, proof, under. A reviewer checks the contribution against the results first, and a gap there is the most common single cause of rejection.
+**Why a reviewer asks this.** The paper claims a contribution that nothing in the body picks up: bounded, converges, drift, primary, proof, under. A reviewer checks the contribution against the results first, and a gap there is the most common single cause of rejection.
 
 **What resolves it.** Either add the work that establishes it, or narrow the claim to what the paper actually shows. Narrowing is not a retreat, it is the difference between a claim you can defend and one you cannot.
 

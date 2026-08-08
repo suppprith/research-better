@@ -37,7 +37,12 @@ CLAIM_MARKERS = (
     "our main contribution",
     "our contribution",
     "the contributions of this paper",
+    "our contributions are as follows",
+    "we make the following contributions",
+    "the following contributions",
+    "contributions are as follows",
     "our contributions are",
+    "contributions:",
     "the main contribution",
     "we contribute",
     "in this paper we propose",
@@ -56,6 +61,50 @@ CLAIM_MARKERS = (
 is a better claim than one saying "we show that", and the first match wins."""
 
 CLAIM_SECTIONS = ("abstract", "introduction", "contributions")
+
+ENUMERATOR = re.compile(
+    r"\(\s*(?:[ivx]{1,4}|[a-h]|\d{1,2})\s*\)|(?:(?<=\s)|^)\d{1,2}[.)](?=\s)|\\item\b",
+    re.IGNORECASE,
+)
+"""A list marker, in the forms a contributions list is actually written in.
+
+`(i)`, `(a)`, `1)`, and `\\item` all mark structure. None of them is a claim
+about anything, and until they were stripped every one of them arrived in
+`unsupported_claim_parts` as something the body was required to establish.
+"""
+
+ENUMERATOR_TOKENS = frozenset(
+    """
+    i ii iii iv v vi vii viii ix x xi xii
+    a b c d e f g h
+    one two three four five six seven eight nine ten eleven twelve
+    thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty
+    first second third fourth fifth sixth seventh eighth ninth tenth
+    """.split()
+)
+"""Tokens that are list markers or counts rather than content.
+
+The reported unsupported parts on a real paper were `ii`, `iii`, `iv`, `vi`,
+`five`, and `contributions`. `i` and `v` were absent, because they occur in the
+body as ordinary tokens and were marked covered by accident, which is the same
+bug pointing the other way.
+"""
+
+CLAIM_STRUCTURE = frozenset(
+    """
+    contribution contributions paper work works propose proposes proposed
+    present presents presented introduce introduces introduced show shows
+    shown demonstrate demonstrates demonstrated make makes made argue argues
+    argued describe describes described study studies section sections
+    following follows summarize summarizes summarized
+    """.split()
+)
+"""Vocabulary that describes a claim rather than being part of one.
+
+"We make five contributions" says nothing the body can support or fail to
+support. Requiring the body to establish the word `contributions` is how a
+claim comes back permanently unsupported.
+"""
 
 METHOD_CUES = (
     "we index",
@@ -167,6 +216,53 @@ def content_words(text: str) -> set[str]:
     return {word.lower() for word in WORD.findall(text)} - STOPWORDS
 
 
+def claim_content_words(text: str) -> set[str]:
+    """The words of a claim that the body can actually be asked to establish.
+
+    Narrower than `content_words` and only applied to the claim, because the
+    claim is the side of the comparison that carries structure. A body sentence
+    saying "contributions" is unremarkable. A claim requiring the body to
+    establish the word "contributions" can never come back supported.
+    """
+    return content_words(text) - ENUMERATOR_TOKENS - CLAIM_STRUCTURE
+
+
+@dataclass(frozen=True, slots=True)
+class ClaimItem:
+    """One item of an enumerated contribution claim.
+
+    A five-item contributions list is five claims. The useful output is which
+    of the five the body picks up, not one verdict over the union of their
+    words, which is a shape that cannot say anything an author can act on.
+    """
+
+    label: str
+    text: str
+    supported: bool
+
+    def to_json(self) -> dict[str, Any]:
+        return {"label": self.label, "text": self.text, "supported": self.supported}
+
+
+def split_claim_items(text: str) -> tuple[tuple[str, str], ...]:
+    """An enumerated claim as (label, text) pairs, or empty if it is not one.
+
+    Two markers minimum. One `(i)` with no `(ii)` after it is a parenthesis,
+    not a list, and treating it as one would split a plain claim in half.
+    """
+    markers = list(ENUMERATOR.finditer(text))
+    if len(markers) < 2:
+        return ()
+
+    items: list[tuple[str, str]] = []
+    for position, marker in enumerate(markers):
+        end = markers[position + 1].start() if position + 1 < len(markers) else len(text)
+        body = text[marker.end() : end].strip(" \t\n,;.")
+        if body:
+            items.append((marker.group(0).strip(), body))
+    return tuple(items)
+
+
 def _section_title(document: Document, sentence: Sentence) -> str:
     if not sentence.section_id:
         return ""
@@ -208,6 +304,18 @@ class NoveltyReport:
     claim_confirmed: bool = False
     claim_evidence_spans: tuple[str, ...] = ()
     unsupported_claim_parts: tuple[str, ...] = ()
+    """What the body does not pick up, named the way the claim states it.
+
+    Parts, not words. A claim written as one sentence has no parts smaller than
+    its content words, so those are what appear. A claim written as an
+    enumerated list has real parts, and naming an item is something an author
+    can act on in a way that a bag of its words is not.
+    """
+
+    claim_items: tuple[ClaimItem, ...] = ()
+    """Set only when the claim is enumerated. Empty is not "all supported", it
+    is "this claim is one sentence"."""
+
     roles: dict[str, str] = field(default_factory=dict)
     serves: dict[str, list[str]] = field(default_factory=dict)
     orphans: tuple[Orphan, ...] = ()
@@ -223,6 +331,7 @@ class NoveltyReport:
             "claim_confirmed": self.claim_confirmed,
             "claim_evidence_spans": list(self.claim_evidence_spans),
             "unsupported_claim_parts": list(self.unsupported_claim_parts),
+            "claim_items": [item.to_json() for item in self.claim_items],
             "roles": dict(self.roles),
             "serves": {key: list(value) for key, value in self.serves.items()},
             "orphans": [orphan.to_json() for orphan in self.orphans],
@@ -342,7 +451,8 @@ def analyse(document: Document, confirmed: bool = False) -> NoveltyReport:
             "in one sentence and run this again."
         )
 
-    claim_words = content_words(claim_sentence.text)
+    claim_words = claim_content_words(claim_sentence.text)
+    items = split_claim_items(claim_sentence.text)
 
     roles: dict[str, str] = {}
     serves: dict[str, list[str]] = {}
@@ -368,17 +478,44 @@ def analyse(document: Document, confirmed: bool = False) -> NoveltyReport:
             evidence.append(sentence.id)
 
     orphans = _orphan_paragraphs(document, roles)
+    checked, unsupported = _check_claim_parts(items, claim_words, covered)
 
     return NoveltyReport(
         claim=" ".join(claim_sentence.text.split()),
         claim_span_id=claim_sentence.id,
         claim_confirmed=confirmed,
         claim_evidence_spans=tuple(evidence),
-        unsupported_claim_parts=tuple(sorted(claim_words - covered)),
+        unsupported_claim_parts=unsupported,
+        claim_items=checked,
         roles=roles,
         serves=serves,
         orphans=tuple(orphans),
     )
+
+
+def _check_claim_parts(
+    items: tuple[tuple[str, str], ...], claim_words: set[str], covered: set[str]
+) -> tuple[tuple[ClaimItem, ...], tuple[str, ...]]:
+    """Which parts of the claim the body picks up, checked item by item.
+
+    An enumerated claim is checked per item, because the union of five items'
+    words is not a thing the body either supports or does not. An item counts
+    as picked up when the body carries any of its content words: a low bar on
+    purpose, matching `CLAIM_OVERLAP`, since the alternative is telling an
+    author their work is missing when it is merely described in other words.
+    """
+    if not items:
+        return (), tuple(sorted(claim_words - covered))
+
+    checked: list[ClaimItem] = []
+    unsupported: list[str] = []
+    for label, text in items:
+        words = claim_content_words(text)
+        supported = bool(words & covered) if words else True
+        checked.append(ClaimItem(label=label, text=" ".join(text.split()), supported=supported))
+        if not supported:
+            unsupported.append(f"{label} {' '.join(text.split())}")
+    return tuple(checked), tuple(unsupported)
 
 
 def confirmation_prompt(report: NoveltyReport) -> str:
@@ -416,7 +553,15 @@ def to_findings(report: NoveltyReport) -> list[Finding]:
     ]
 
     if report.claim and report.unsupported_claim_parts:
-        missing = ", ".join(report.unsupported_claim_parts)
+        # Items are phrases and read as a list. Words are tokens and read as a
+        # set. Joining both with the same separator makes one of them look like
+        # the other.
+        missing = (
+            "; ".join(report.unsupported_claim_parts)
+            if report.claim_items
+            else ", ".join(report.unsupported_claim_parts)
+        )
+        subject = "items of the stated contribution" if report.claim_items else "parts of the claim"
         findings.append(
             Finding(
                 span_id=report.claim_span_id or "",
@@ -426,10 +571,10 @@ def to_findings(report: NoveltyReport) -> list[Finding]:
                 char_range=(0, 0),
                 suggestion=Suggestion.REVIEW,
                 note=(
-                    f"Nothing in the body picks up these parts of the stated "
-                    f"contribution: {missing}. Either the paper is missing the work "
-                    f"that supports them, or the claim is broader than what was done. "
-                    f"Both are worth knowing before a reviewer finds out."
+                    f"Nothing in the body picks up these {subject}: {missing}. Either "
+                    f"the paper is missing the work that supports them, or the claim is "
+                    f"broader than what was done. Both are worth knowing before a "
+                    f"reviewer finds out."
                 ),
             )
         )

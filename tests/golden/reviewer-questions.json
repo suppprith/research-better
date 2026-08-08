@@ -16,7 +16,7 @@
       "resolution": "Either add the work that establishes it, or narrow the claim to what the paper actually shows. Narrowing is not a retreat, it is the difference between a claim you can defend and one you cannot.",
       "severity": "blocking",
       "span_id": "s-2e40522fb767",
-      "why": "The paper claims a contribution that nothing in the body picks up: bounded, contribution, converges, drift, primary, proof, under. A reviewer checks the contribution against the results first, and a gap there is the most common single cause of rejection."
+      "why": "The paper claims a contribution that nothing in the body picks up: bounded, converges, drift, primary, proof, under. A reviewer checks the contribution against the results first, and a gap there is the most common single cause of rejection."
     },
     {
       "category": "missing_baseline",

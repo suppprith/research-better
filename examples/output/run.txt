@@ -3,7 +3,7 @@ ingest               54 sentences, 701 words of prose, 9 citations used, 8 in th
 [exit 0]
 
 $ rb novelty --confirm-claim paper.md
-novelty              7 orphan paragraph(s), 7 unsupported part(s) of the claim
+novelty              7 orphan paragraph(s), 6 unsupported part(s) of the claim
 [exit 1]
 
 $ rb voice paper.md

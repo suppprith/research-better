@@ -429,14 +429,20 @@ def _threats_to_validity(document: Document) -> list[Question]:
 def _unsupported_contribution(report: NoveltyReport) -> list[Question]:
     if not report.claim or not report.unsupported_claim_parts:
         return []
-    missing = ", ".join(report.unsupported_claim_parts)
+    # An enumerated claim names items, and its items are phrases. Joining them
+    # with commas turns a list of five claims into one run-on sentence, which
+    # is the form this question was asked in when every enumerator counted as a
+    # missing part.
+    items = bool(report.claim_items)
+    missing = ("; " if items else ", ").join(report.unsupported_claim_parts)
+    subject = "items of its contribution" if items else "a contribution"
     return [
         Question(
             category="unsupported_claim",
             severity=Severity.BLOCKING,
             question="Where in the paper is the stated contribution established?",
             why=(
-                f"The paper claims a contribution that nothing in the body picks up: "
+                f"The paper claims {subject} that nothing in the body picks up: "
                 f"{missing}. A reviewer checks the contribution against the results "
                 f"first, and a gap there is the most common single cause of rejection."
             ),

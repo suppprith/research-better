@@ -193,3 +193,137 @@ def test_the_report_serializes(report: NoveltyReport) -> None:
     assert payload["claim_confirmed"] is False
     assert isinstance(payload["orphans"], list)
     assert isinstance(payload["roles"], dict)
+
+
+# Enumerated contribution claims -------------------------------------------
+#
+# `bad-paper.md` states its contribution in one plain sentence, so the pass had
+# never run against the form most real CS papers use. On the first real paper
+# the reported unsupported parts were `ii`, `iii`, `iv`, `vi`, `five`, and
+# `contributions`. None of those is a claim about anything and none can ever be
+# matched by a body sentence, so the claim could never come back supported, and
+# that produced the one blocking reviewer question on the paper.
+
+from pathlib import Path  # noqa: E402
+
+ENUMERATED = Path(__file__).parent / "fixtures" / "enumerated-claim.md"
+
+
+@pytest.fixture(scope="module")
+def enumerated():
+    return ingest(ENUMERATED, ENUMERATED.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def enumerated_report(enumerated) -> NoveltyReport:
+    return novelty.analyse(enumerated)
+
+
+def test_no_enumerator_is_reported_as_an_unsupported_part(enumerated_report) -> None:
+    reported = " ".join(enumerated_report.unsupported_claim_parts).lower()
+    for token in ("(i)", "(ii)", "(iii)", "(iv)", "(v)"):
+        assert not reported.startswith(token.strip("()")), reported
+    assert enumerated_report.unsupported_claim_parts != ()
+
+    words = {
+        part.split()[0].strip("()").lower() for part in enumerated_report.unsupported_claim_parts
+    }
+    assert words <= {"(i)", "(ii)", "(iii)", "(iv)", "(v)", "i", "ii", "iii", "iv", "v"}
+
+
+def test_no_count_or_structural_word_is_reported(enumerated_report) -> None:
+    """`five` and `contributions` describe the claim rather than being part of it."""
+    parts = list(enumerated_report.unsupported_claim_parts)
+    assert "five" not in parts
+    assert "contributions" not in parts
+    assert "contribution" not in parts
+
+
+def test_an_item_the_body_never_picks_up_is_still_reported(enumerated_report) -> None:
+    """The rule has to keep working. Nothing in the fixture's body mentions the
+    geometric bound, and an author needs to be told that."""
+    unsupported = [item for item in enumerated_report.claim_items if not item.supported]
+    assert [item.label for item in unsupported] == ["(iii)"]
+    assert "geometric bound is tight" in unsupported[0].text
+
+
+def test_an_unsupported_item_is_named_as_an_item(enumerated_report) -> None:
+    """A bag of words is the wrong shape. "item (iii) is not picked up anywhere"
+    is an observation an author can act on."""
+    assert enumerated_report.unsupported_claim_parts == (
+        "(iii) a proof that the geometric bound is tight",
+    )
+
+
+def test_the_items_the_body_does_pick_up_are_supported(enumerated_report) -> None:
+    supported = {item.label for item in enumerated_report.claim_items if item.supported}
+    assert supported == {"(i)", "(ii)", "(iv)", "(v)"}
+
+
+def test_a_plain_claim_still_reports_words(bad_paper) -> None:
+    """A one-sentence claim has no parts smaller than its content words, and
+    the word-level report is still the right answer for it."""
+    report = novelty.analyse(bad_paper)
+    assert report.claim_items == ()
+    assert all(len(part.split()) == 1 for part in report.unsupported_claim_parts)
+
+
+def test_a_single_parenthesis_is_not_a_list() -> None:
+    """One `(i)` with no `(ii)` after it is a parenthesis. Splitting on it would
+    cut a plain claim in half."""
+    document = ingest(
+        "p.md",
+        "# Introduction\n\nWe propose a greedy placement algorithm (i.e. one that "
+        "never backtracks) for anchors at a fixed budget.\n",
+    )
+    assert novelty.analyse(document).claim_items == ()
+
+
+def test_an_item_list_written_with_item_is_read_the_same_way() -> None:
+    r"""The `\item` form, which is how a LaTeX paper writes the same list."""
+    assert [
+        label
+        for label, _ in novelty.split_claim_items(
+            r"We make the following contributions: \item a convergence proof "
+            r"\item a placement algorithm \item an evaluation across four floors"
+        )
+    ] == [r"\item", r"\item", r"\item"]
+
+
+def test_the_blocking_question_clears_when_the_claim_resolves(
+    enumerated, enumerated_report
+) -> None:
+    """The downstream half. The blocking reviewer question reads this report,
+    and it was firing on `ii`, `iii`, and `contributions`."""
+    from research_better import reviewer
+
+    questions = reviewer.analyse(enumerated, enumerated_report)
+    blocking = [q for q in questions.questions if q.severity is reviewer.Severity.BLOCKING]
+    unsupported = [q for q in blocking if q.category == "unsupported_claim"]
+
+    # The question is still asked, because item (iii) really is unsupported.
+    assert len(unsupported) == 1
+    # What it names is the item, not `ii`, `iii`, `five`, and `contributions`.
+    assert "(iii) a proof that the geometric bound is tight" in unsupported[0].why
+    for token in (" ii,", " iv,", " five,", " contributions,"):
+        assert token not in unsupported[0].why
+
+
+def test_the_blocking_question_disappears_when_every_item_is_supported() -> None:
+    """The other half of the acceptance: a paper whose contribution really is
+    established raises nothing, and one whose is not still does."""
+    from research_better import reviewer
+
+    document = ingest(
+        "p.md",
+        "# Introduction\n\nWe make the following contributions: (i) a placement "
+        "algorithm at a fixed budget, and (ii) an evaluation across four floors.\n\n"
+        "# Results\n\nOur algorithm places anchors at a fixed budget. Coverage rose "
+        "across the four floors we evaluated.\n",
+    )
+    report = novelty.analyse(document)
+    assert report.unsupported_claim_parts == ()
+    assert all(item.supported for item in report.claim_items)
+
+    questions = reviewer.analyse(document, report)
+    assert not [q for q in questions.questions if q.category == "unsupported_claim"]

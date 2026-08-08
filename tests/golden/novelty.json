@@ -2,6 +2,7 @@
   "claim": "Our primary contribution is a formal proof that adaptive retrieval converges under bounded query drift.",
   "claim_confirmed": false,
   "claim_evidence_spans": [],
+  "claim_items": [],
   "claim_span_id": "s-2e40522fb767",
   "orphans": [
     {
@@ -161,7 +162,6 @@
   },
   "unsupported_claim_parts": [
     "bounded",
-    "contribution",
     "converges",
     "drift",
     "primary",
