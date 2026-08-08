@@ -6,6 +6,7 @@ _research_better() {
     local -a commands arguments
     commands=(
         'ask:raise the questions a reviewer will ask'
+        'doctor:report the installed version, the formats it can read, and what is missing'
         'edit:turn findings into a patch, applied only with --apply'
         'fluff:find text that does not serve the papers argument'
         'ground:verify citations against the literature'
@@ -31,6 +32,9 @@ _research_better() {
             case "${words[2]}" in
             ask)
                 arguments=('--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')
+                ;;
+            doctor)
+                arguments=('--expect' '--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')
                 ;;
             edit)
                 arguments=('--apply' '--force' '--format' '--help' '--interactive' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--target-reduction' '--venue' '--verbose' '-h' '-q' '-v')

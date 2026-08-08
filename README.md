@@ -92,6 +92,56 @@ cp completions/research-better.zsh ~/.zfunc/_research-better    # zsh, with ~/.z
 cp completions/research-better.fish ~/.config/fish/completions/  # fish
 ```
 
+### As a Claude Skill
+
+```
+/plugin marketplace add suppprith/research-better
+/plugin install research-better@research-better
+```
+
+Or copy it in by hand, which is the same thing without the marketplace:
+
+```
+git clone https://github.com/suppprith/research-better
+mkdir -p ~/.claude/skills/research-better
+cp research-better/SKILL.md ~/.claude/skills/research-better/
+```
+
+Either way, install the Python package as well. The skill drives the CLI and
+does not analyse anything itself, so a skill without the package is a skill
+that cannot run. It checks on first use with `rb doctor` and stops with the
+install command rather than reading the paper by eye.
+
+To check an install by hand:
+
+```
+rb doctor
+```
+
+It prints the version, which formats it can read, which extras are missing with
+the command that installs each, and whether a contact address is set.
+
+**What the skill does when you invoke it.** It runs the passes in order:
+ingest, novelty, voice, ground, originality, fluff, trace, ask, edit, report.
+It stops after the novelty pass to show you the contribution claim it read off
+your paper and waits for you to confirm it, because if that claim is wrong
+every cut after it is wrong. It reports what the passes returned, including
+when they returned nothing, and it does not read the paper and form its own
+view.
+
+**What it writes.** Everything lands in `.research-better/` beside the draft:
+one JSON artifact per pass, a Markdown page for the report and the reviewer
+questions, and a `.diff` for proposed edits. Each artifact records the hash of
+the draft it came from, so a stale one is caught rather than trusted. Your
+draft is untouched unless you ask for `rb edit --apply`, which takes a backup
+first and is undone by `rb revert`.
+
+**What it refuses.** No invented sources. No claimed check that did not run. No
+rewriting to evade a detector, and no advice about what a detector looks for.
+No edits to your results, data, or numbers. No percentage that reads as a
+plagiarism or AI score. No answers to the reviewer questions, because asking
+for the sample size is the output and inventing one is worse than the gap.
+
 ### As a Python library
 
 ```python

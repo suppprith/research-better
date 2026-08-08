@@ -19,6 +19,20 @@ The default action on a weak sentence is delete or ask, never rewrite. Every
 other tool in this space reaches for a replacement sentence, and a replacement
 sentence is how a paper stops sounding like its author.
 
+## Before anything else
+
+```
+rb doctor --expect 0.1.0
+```
+
+**If that command is not found, stop** and tell the user to run
+`pip install "research-better[all]"`. A skill that falls back to reading the
+paper itself produces the unverified opinion this tool exists to replace,
+wearing its name.
+
+Pass on whatever `doctor` reports: a version warning with its upgrade command,
+a missing extra before a draft in that format fails at ingest.
+
 ## Order
 
 Run the scripts. Do not reimplement their logic by eye: if `rb fluff` exists,
@@ -48,10 +62,9 @@ wrong, every cut after it is wrong. If the pass reports that no claim could be
 found, tell the user exactly that and stop. A paper whose novelty cannot be
 read off its own opening has a problem that tightening the prose will not fix.
 
-Step 8 synthesizes what the earlier steps found into passages that may read as
-machine-written, each with its cause and its fix. Its second list matters as
-much as its first: passages it looked at and left alone. Report both. Never
-turn one of its causes into a rewording.
+Step 8 synthesizes the earlier steps into passages that may read as
+machine-written, each with a cause and a fix. Report both of its lists and
+never turn a cause into a rewording.
 
 Step 10 refuses until steps 2 and 4 to 7 have all run against the current draft
 and the claim is confirmed. That is the point of it: nothing gets written
@@ -107,10 +120,9 @@ positives. When the deterministic passes flag something that looks like a false
 positive, say "likely a false positive, leave it" rather than proposing a
 change. Being wrong in that direction costs the author nothing.
 
-`rb trace` already separates these out. Its `left_alone` list is passages that
-tripped a texture signal and nothing else, each with the reason it was left.
-Read that list out rather than quietly dropping it: an author who is told what
-was looked at and not changed can trust the flags that remain.
+`rb trace` separates these out already. Read its `left_alone` list out rather
+than dropping it: an author told what was looked at and not changed can trust
+the flags that remain.
 
 ## Install
 
@@ -120,3 +132,6 @@ export RESEARCH_BETTER_CONTACT="you@example.edu"
 ```
 
 The contact address puts scholarly API requests in the polite pool. Set it.
+
+Artifacts land in `.research-better/`, one per pass. The draft is untouched
+unless the user asks for `rb edit --apply`, which backs it up first.

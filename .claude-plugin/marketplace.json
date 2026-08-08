@@ -1,0 +1,14 @@
+{
+  "name": "research-better",
+  "owner": {
+    "name": "Suprith R B",
+    "url": "https://github.com/suppprith"
+  },
+  "plugins": [
+    {
+      "name": "research-better",
+      "source": "./",
+      "description": "Improve a research paper by checking it rather than rewriting it. Needs the research-better CLI installed: pip install \"research-better[all]\"."
+    }
+  ]
+}

@@ -9,8 +9,10 @@ not let a version be replaced:
   else has succeeded.
 * A release with no changelog entry, which is how a breaking change reaches
   people who had no way to see it coming.
+* A plugin manifest still carrying the previous version, so the skill installs
+  from the marketplace and never updates again.
 
-All three are cheap to check before the build and impossible to fix after the
+All of them are cheap to check before the build and impossible to fix after the
 upload, so they are checked first.
 
     python scripts/check_release.py v0.1.0
@@ -18,6 +20,7 @@ upload, so they are checked first.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -28,6 +31,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from research_better import __version__  # noqa: E402
 
 CHANGELOG = ROOT / "CHANGELOG.md"
+PLUGIN = ROOT / ".claude-plugin" / "plugin.json"
+SKILL = ROOT / "SKILL.md"
 
 SECTION = re.compile(r"^##\s+\[?(?P<version>[0-9][^\]\s]*)\]?", re.MULTILINE)
 
@@ -68,6 +73,36 @@ def check(tag: str) -> list[str]:
         )
     elif not notes:
         problems.append(f"the {version} section of {CHANGELOG.name} is empty")
+
+    problems.extend(_skill_problems(version))
+    return problems
+
+
+def _skill_problems(version: str) -> list[str]:
+    """The skill and its manifest have to move with the package.
+
+    A marketplace pins updates to the manifest version, so a stale one means
+    installed copies never update again. A stale `--expect` means the version
+    warning the skill exists to raise fires on every correct install instead.
+    """
+    problems: list[str] = []
+
+    manifest = json.loads(PLUGIN.read_text(encoding="utf-8"))
+    if manifest.get("version") != version:
+        problems.append(
+            f"{PLUGIN.name} says {manifest.get('version')} and the package says {version}. "
+            f"A marketplace pins updates to this field, so a stale one means nobody "
+            f"who installed the skill ever gets another version of it."
+        )
+
+    expected = re.search(r"rb doctor --expect (\S+)", SKILL.read_text(encoding="utf-8"))
+    if expected is None:
+        problems.append(f"{SKILL.name} has no `rb doctor --expect` preflight")
+    elif expected.group(1) != version:
+        problems.append(
+            f"{SKILL.name} expects CLI {expected.group(1)} and the package is {version}, "
+            f"so the skill would warn about a version mismatch on a correct install."
+        )
 
     return problems
 

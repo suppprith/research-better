@@ -3,6 +3,7 @@
 
 complete -c research-better -f
 complete -c research-better -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
+complete -c research-better -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c research-better -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
 complete -c research-better -n __fish_use_subcommand -a fluff -d 'find text that does not serve the papers argument'
 complete -c research-better -n __fish_use_subcommand -a ground -d 'verify citations against the literature'
@@ -23,6 +24,16 @@ complete -c research-better -n '__fish_seen_subcommand_from ask' -l quiet
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l refresh
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l venue
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l verbose
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l expect
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l format
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l help
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l json
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l no-color
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l offline
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l quiet
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l refresh
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l venue
+complete -c research-better -n '__fish_seen_subcommand_from doctor' -l verbose
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l apply
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l force
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l format
@@ -133,6 +144,7 @@ complete -c research-better -n __fish_use_subcommand -a '(__fish_complete_path)'
 
 complete -c rb -f
 complete -c rb -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
+complete -c rb -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c rb -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
 complete -c rb -n __fish_use_subcommand -a fluff -d 'find text that does not serve the papers argument'
 complete -c rb -n __fish_use_subcommand -a ground -d 'verify citations against the literature'
@@ -153,6 +165,16 @@ complete -c rb -n '__fish_seen_subcommand_from ask' -l quiet
 complete -c rb -n '__fish_seen_subcommand_from ask' -l refresh
 complete -c rb -n '__fish_seen_subcommand_from ask' -l venue
 complete -c rb -n '__fish_seen_subcommand_from ask' -l verbose
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l expect
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l format
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l help
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l json
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l no-color
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l offline
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l quiet
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l refresh
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l venue
+complete -c rb -n '__fish_seen_subcommand_from doctor' -l verbose
 complete -c rb -n '__fish_seen_subcommand_from edit' -l apply
 complete -c rb -n '__fish_seen_subcommand_from edit' -l force
 complete -c rb -n '__fish_seen_subcommand_from edit' -l format

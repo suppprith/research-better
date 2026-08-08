@@ -208,6 +208,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     back.add_argument("draft", type=Path, help="path to the paper")
 
+    check = commands.add_parser(
+        "doctor",
+        parents=[parent],
+        help="report the installed version, the formats it can read, and what is missing",
+    )
+    check.add_argument(
+        "--expect",
+        metavar="VERSION",
+        help=(
+            "the version the caller was built against. A mismatch is reported and "
+            "does not fail: the skill layer uses this to notice it is out of step "
+            "with the CLI it is driving"
+        ),
+    )
+
     return parser
 
 
@@ -283,6 +298,87 @@ def revert(args: argparse.Namespace, console: Console) -> int:
     restored = edit_layer.revert(draft)
     console.say(f"{draft.name} restored from {restored.name}")
     console.detail(f"  the backup was kept at {restored}")
+    return EXIT_CLEAN
+
+
+FORMAT_EXTRAS = (
+    ("markdown", None, None, ".md"),
+    ("latex", "bibtexparser", "latex", ".tex"),
+    ("word", "docx", "docx", ".docx"),
+    ("pdf", "pypdf", "pdf", ".pdf"),
+)
+"""(label, module, extra, suffix) for each format, in install order."""
+
+
+def doctor(args: argparse.Namespace, console: Console) -> int:
+    """Say what is installed, so a caller can find out before it depends on it.
+
+    Written for the skill layer, which drives this CLI and has no other way to
+    tell a missing install from a missing feature. A skill that cannot run its
+    scripts and does not notice will analyse the paper by eye and produce
+    exactly the unverified judgement this tool exists to replace, so the answer
+    has to come from the tool rather than from a guess about it.
+    """
+    from research_better.extras import available
+    from research_better.passes import PASSES
+
+    console.say(f"{PROGRAM} {__version__}")
+    console.say(f"python {sys.version.split()[0]} at {sys.executable}")
+    console.say()
+
+    console.say("formats")
+    missing: list[str] = []
+    for label, module, extra, suffix in FORMAT_EXTRAS:
+        if module is None or available(module):
+            console.say(f"  {label:<10} {suffix:<7} ready")
+        else:
+            missing.append(extra or label)
+            console.say(f'  {label:<10} {suffix:<7} needs: pip install "{PROGRAM}[{extra}]"')
+
+    console.say()
+    console.say("passes: " + ", ".join(sorted(name for name, p in PASSES.items() if p.implemented)))
+
+    contact = os.environ.get("RESEARCH_BETTER_CONTACT")
+    console.say(
+        f"contact: {contact}"
+        if contact
+        else (
+            "contact: unset. Setting RESEARCH_BETTER_CONTACT puts scholarly API "
+            "requests in the polite pool and lets a source operator email rather "
+            "than block you."
+        )
+    )
+
+    if args.expect and args.expect != __version__:
+        # Reported and not fatal. A caller one patch ahead of the CLI is
+        # usually fine, and refusing to run would block work over a difference
+        # that may not matter. Saying nothing would let it matter silently.
+        console.warn(
+            f"the caller was built against {args.expect} and this is {__version__}. "
+            f"Upgrade with: pip install --upgrade {PROGRAM}"
+        )
+
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "version": __version__,
+                    "python": sys.version.split()[0],
+                    "executable": sys.executable,
+                    "formats_ready": [
+                        label
+                        for label, module, _extra, _suffix in FORMAT_EXTRAS
+                        if module is None or available(module)
+                    ],
+                    "extras_missing": missing,
+                    "contact_set": bool(contact),
+                    "expected_version": args.expect,
+                    "version_matches": not args.expect or args.expect == __version__,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
     return EXIT_CLEAN
 
 
@@ -396,8 +492,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         style=Style(enabled=_colour_wanted(args.no_color)),
     )
 
+    # Neither of these is a pass. One restores a backup and reads no artifact,
+    # and the other answers questions about the install rather than about a
+    # paper, so neither takes a draft.
+    standalone = {"revert": revert, "doctor": doctor}
+
     try:
-        return revert(args, console) if args.command == "revert" else run(args, console)
+        handler = standalone.get(args.command)
+        return handler(args, console) if handler else run(args, console)
     except ResearchBetterError as error:
         # The user asked for a paper to be checked, not for a traceback. Only
         # errors this package raises on purpose get the short treatment. A real

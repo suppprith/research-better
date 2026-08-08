@@ -1,0 +1,20 @@
+{
+  "name": "research-better",
+  "displayName": "research-better",
+  "version": "0.1.0",
+  "description": "Improve a research paper by checking it. Verifies citations against real literature, cuts text that does not serve the novelty claim, checks for unattributed overlap, and raises the questions a reviewer will ask. Does not write replacement prose.",
+  "author": {
+    "name": "Suprith R B",
+    "url": "https://github.com/suppprith"
+  },
+  "homepage": "https://github.com/suppprith/research-better",
+  "repository": "https://github.com/suppprith/research-better",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "academic-writing",
+    "citations",
+    "peer-review",
+    "latex"
+  ]
+}
