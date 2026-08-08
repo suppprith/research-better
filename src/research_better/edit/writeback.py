@@ -34,12 +34,13 @@ UNSUPPORTED = {
         "document this tool only partly understands, and the result would not be "
         "the file you compile from. Read the report and change the source."
     ),
-    ".docx": (
-        "Word writeback lands with Word ingest, because it has to arrive as tracked "
-        "changes rather than as silent edits, and there is no point writing changes "
-        "into a format this tool cannot yet read back."
-    ),
 }
+
+TRACKED_CHANGES = {".docx"}
+"""Formats written as tracked changes rather than by replacing text.
+
+A Word user has an accept and reject pane they already know, so the edits go
+there and the author decides in the tool they were already using."""
 
 
 class WritebackError(ResearchBetterError):
@@ -184,6 +185,9 @@ def apply(
     # land in.
     words = len(assemble(document, edits, target_reduction).split())
 
+    if document.path.suffix.lower() in TRACKED_CHANGES:
+        return _tracked_changes(document, edits, words, force)
+
     grouped = _by_file(document, edits)
     targets = [Path(name) for name in sorted(grouped)]
 
@@ -203,6 +207,28 @@ def apply(
         target.write_text(patched, encoding="utf-8", newline="")
 
     return Written(files=tuple(targets), backups=backups, words=words)
+
+
+def _tracked_changes(document: Document, edits: list[Edit], words: int, force: bool) -> Written:
+    """Word, written through the tracked-changes writer.
+
+    Single file by construction, and it goes through the same dirty check and
+    the same backup as every other format. Losing unsaved work is no less bad
+    for being lost in a zip.
+    """
+    from research_better.edit import word
+
+    target = Path(document.path)
+    if uncommitted(target) and not force:
+        raise WritebackError(
+            f"{target.name} has uncommitted changes. Applying would overwrite work "
+            f"that git cannot give back. Commit or stash first, or pass --force if "
+            f"you have another copy."
+        )
+
+    backup = take_backup(target)
+    word.apply(document, edits)
+    return Written(files=(target,), backups=(backup,), words=words)
 
 
 def _relocated(edit: Edit, start: int, end: int) -> Edit:

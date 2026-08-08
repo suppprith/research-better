@@ -132,9 +132,11 @@ def test_apply_to_a_pdf_points_at_the_report() -> None:
         writeback.refuse_unsupported(Path("paper.pdf"))
 
 
-def test_apply_to_a_word_file_names_what_it_is_waiting_for() -> None:
-    with pytest.raises(WritebackError, match="tracked changes"):
-        writeback.refuse_unsupported(Path("paper.docx"))
+def test_a_word_file_is_written_as_tracked_changes_not_replacements() -> None:
+    # Word goes through its own writer rather than through span replacement.
+    # See test_word.py.
+    assert writeback.refuse_unsupported(Path("paper.docx")) is None
+    assert ".docx" in writeback.TRACKED_CHANGES
 
 
 def test_a_markdown_draft_is_writable() -> None:

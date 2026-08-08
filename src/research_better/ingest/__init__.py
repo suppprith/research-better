@@ -25,6 +25,10 @@ class Adapter:
     module: str
     format: str
     extra: str | None = None
+    binary: bool = False
+    """The format has no source text to hand the adapter. It reads the file
+    itself and produces the text, and a caller cannot supply one: text the
+    adapter did not extract would not match the offset map it built."""
 
 
 ADAPTERS: dict[str, Adapter] = {
@@ -32,6 +36,7 @@ ADAPTERS: dict[str, Adapter] = {
     ".markdown": Adapter("research_better.ingest.markdown", "markdown"),
     ".tex": Adapter("research_better.ingest.latex", "latex", extra="latex"),
     ".ltx": Adapter("research_better.ingest.latex", "latex", extra="latex"),
+    ".docx": Adapter("research_better.ingest.word", "word", extra="docx", binary=True),
 }
 
 
@@ -61,7 +66,12 @@ def load(path: Path | str, text: str | None = None) -> Document:
         raise UnsupportedFormatError(path.suffix or "(no extension)", supported_suffixes())
 
     module = importlib.import_module(adapter.module)
-    source = read_source(path) if text is None else text
+    if adapter.binary:
+        source = ""
+    elif text is not None:
+        source = text
+    else:
+        source = read_source(path)
     document: Document = module.ingest(path, source)
     return document
 
