@@ -8,6 +8,7 @@ _research_better() {
         'ask:raise the questions a reviewer will ask'
         'doctor:report the installed version, the formats it can read, and what is missing'
         'edit:turn findings into a patch, applied only with --apply'
+        'findings:print what the passes already found, without running anything'
         'fluff:find text that does not serve the papers argument'
         'ground:verify citations against the literature'
         'ingest:parse the draft and write its structure'
@@ -38,6 +39,9 @@ _research_better() {
                 ;;
             edit)
                 arguments=('--apply' '--force' '--format' '--help' '--interactive' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--target-reduction' '--venue' '--verbose' '-h' '-q' '-v')
+                ;;
+            findings)
+                arguments=('--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')
                 ;;
             fluff)
                 arguments=('--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')

@@ -279,3 +279,124 @@ def test_edit_accepts_apply_and_report_accepts_check(draft: Path) -> None:
     # is on disk and names what is not, so it runs.
     assert main(["edit", str(draft), "--apply", "--quiet"]) == EXIT_ERROR
     assert main(["report", str(draft), "--check", "--quiet"]) in {EXIT_CLEAN, EXIT_FINDINGS}
+
+
+# A pass has to show what it found ------------------------------------------
+#
+# Run through an agent on a real paper, the entire visible output of the
+# analysis was four summary lines. The author learned their paper had 28
+# findings, 21 orphan paragraphs, and 18 flagged passages, and nothing about
+# what any of them was, because all of it was in JSON that nobody opened.
+#
+# The regression guard is that a specific planted defect appears in stdout. The
+# failure was invisible because nothing ever asserted a human could see the
+# result.
+
+
+def test_a_single_pass_prints_findings_a_reader_can_act_on(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Driven the way an agent drives it: one pass by name, no flags."""
+    assert main(["fluff", str(draft)]) == EXIT_FINDINGS
+    output = capsys.readouterr().out
+
+    # A planted defect from bad-paper.md, quoted, where it is, and why.
+    assert "It is important to note that" in output
+    assert "filler_openers" in output
+    assert "line " in output
+    assert "announces that a sentence is coming" in output
+
+
+def test_the_summary_line_names_the_causes_not_only_the_count(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """`28 findings` says nothing about a paper. On the paper that produced
+    this, the causes line alone would have shown a lexicon bug immediately."""
+    main(["fluff", str(draft)])
+    output = capsys.readouterr().out
+    assert "filler_openers" in output
+    assert any(line.strip().startswith(("1", "2", "3", "4", "5")) for line in output.splitlines())
+
+
+def test_a_long_list_says_how_many_were_withheld_and_where(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    main(["fluff", str(draft)])
+    output = capsys.readouterr().out
+    assert "more, all of them in" in output
+    assert ".research-better/fluff.json" in output
+    # Not an absolute path. A machine's home directory is noise in every
+    # transcript it lands in.
+    assert r"C:\Users" not in output
+    assert "/home/" not in output
+
+
+def test_quiet_still_prints_nothing(draft: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """For CI and for the artifact-only case."""
+    assert main(["fluff", str(draft), "--quiet"]) == EXIT_FINDINGS
+    assert capsys.readouterr().out == ""
+
+
+def test_run_stays_readable(draft: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Ten passes each printing every finding is a wall rather than a report,
+    and `run` ends with the report anyway."""
+    main(["run", str(draft), "--offline"])
+    output = capsys.readouterr().out
+    # The causes are still there, so a reader knows what the counts are made of.
+    assert "filler_openers" in output
+    # The per-finding block is not.
+    assert "more, all of them in" not in output
+
+
+def test_findings_are_written_beside_the_json_too(draft: Path) -> None:
+    """The terminal truncates because a wall of text is not read. A file does
+    not have that problem, and an author who wants the rest should not have to
+    parse JSON for it."""
+    main(["fluff", str(draft), "--quiet"])
+    page = ArtifactStore(draft).path_for("fluff", ".md")
+    assert page.is_file()
+    body = page.read_text(encoding="utf-8")
+    assert "It is important to note that" in body
+    assert "Needless to say" in body
+
+
+# rb findings ---------------------------------------------------------------
+
+
+def test_findings_prints_what_is_already_on_disk(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The thing to tell somebody who ran the passes and got counts back.
+    Cheap, offline, and it runs nothing."""
+    main(["fluff", str(draft), "--quiet"])
+    capsys.readouterr()
+
+    assert main(["findings", str(draft)]) == EXIT_CLEAN
+    output = capsys.readouterr().out
+    assert "fluff.md" in output
+    assert "It is important to note that" in output
+
+
+def test_findings_says_so_when_nothing_has_been_written(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Nothing on disk and a paper with nothing wrong with it look identical
+    from here, and only one of them is true."""
+    assert main(["findings", str(draft)]) == EXIT_CLEAN
+    output = capsys.readouterr().out
+    assert "No analysis has been written" in output
+
+
+def test_findings_warns_when_the_page_describes_an_older_draft(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    main(["fluff", str(draft), "--quiet"])
+    draft.write_text(draft.read_text(encoding="utf-8") + "\nA new sentence.\n", encoding="utf-8")
+    capsys.readouterr()
+
+    main(["findings", str(draft)])
+    assert "describes an older version" in capsys.readouterr().err
+
+
+def test_findings_refuses_a_draft_that_does_not_exist(tmp_path: Path) -> None:
+    assert main(["findings", str(tmp_path / "absent.md")]) == EXIT_ERROR

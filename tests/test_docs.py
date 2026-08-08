@@ -81,7 +81,15 @@ def test_the_example_shows_the_edit_pass_refusing_something() -> None:
 
 def test_the_usage_output_is_copied_from_the_real_run(readme: str) -> None:
     transcript = (EXAMPLES / "output" / "run.txt").read_text(encoding="utf-8")
-    summaries = re.findall(r"^(?:ingest|fluff|trace|ask|edit|ground) +\S.*$", readme, re.MULTILINE)
+    # Every implemented pass, not a hand-kept list of six. A stale `novelty`
+    # line survived a release because the pass that produced it was not named
+    # here, which makes this the same bug the transcript check exists to catch.
+    from research_better.passes import PASSES
+
+    names = "|".join(name for name, entry in PASSES.items() if entry.implemented)
+    # Two spaces minimum: a summary line pads the pass name to a column, and
+    # prose that happens to start with "novelty pass, ..." has one space.
+    summaries = re.findall(rf"^(?:{names}) {{2,}}\S.*$", readme, re.MULTILINE)
     assert summaries, "the README shows no command output"
     for line in summaries:
         assert line in transcript, f"the README invented this line: {line!r}"

@@ -4,6 +4,25 @@ ingest               54 sentences, 701 words of prose, 9 citations used, 8 in th
 
 $ rb novelty --confirm-claim paper.md
 novelty              7 orphan paragraph(s), 6 unsupported part(s) of the claim
+                     7 novelty_orphan_paragraph, 1 novelty_unsupported_contribution
+  -         novelty_unsupported_contribution  [high]
+    "Our primary contribution is a formal proof that adaptive retrieval converges under bounded qu..."
+    Nothing in the body picks up these parts of the claim: bounded, converges, drift, primary, proof, under. Either the paper is missing the work that supports t...
+  line 9    novelty_orphan_paragraph  [medium]
+    "It is important to note that information retrieval has become a truly pivotal area of study i..."
+    No sentence in this paragraph serves any part of the contribution claim, carries a citation, reports a result, or is background or a limitation. Check whethe...
+  line 37   novelty_orphan_paragraph  [medium]
+    "Moreover, benchmark design has attracted a literature of its own. Several authors have argued..."
+  line 40   novelty_orphan_paragraph  [medium]
+    "Additionally, reproducibility work has grown in volume. Few of these studies agree on what co..."
+  line 47   novelty_orphan_paragraph  [medium]
+    "Search engines are used by billions of people every day. The web has grown enormously over th..."
+  line 72   novelty_orphan_paragraph  [medium]
+    "The remainder of this paper is organized as follows. Section 4 reports results and Section 5..."
+  line 75   novelty_orphan_paragraph  [medium]
+    "Databases have existed since the 1960s. Relational algebra provides a formal foundation for q..."
+  line 92   novelty_orphan_paragraph  [medium]
+    "Peer review has been studied for many years. Reviewers disagree with each other more often th..."
 [exit 1]
 
 $ rb voice paper.md
@@ -12,14 +31,64 @@ voice                687 words profiled, 81 terms recorded, 2 section profile(s)
 
 $ rb ground --offline paper.md
 ground               3 of 8 entries resolved, 1 of 6 sources had full text
+                     6 claim_uncheckable, 3 citation_not_found, 1 claim_partial, and 2 other rule(s)
+  line 118  citation_title_mismatch  [high]
+    "A Complete Survey of Dense Retrieval Methods"
+    The record for this identifier is titled 'Dense Passage Retrieval for Open-Domain Question Answering', which does not match the entry (similarity 0.41 agains...
+  line 124  citation_retracted  [high]
+    "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorde..."
+    This work has been retracted. See the retraction notice at 10.1016/s0140-6736(10)60175-4. Citing it may still be correct if you are discussing the retraction...
+  line 44   claim_partial  [medium]
+    "Hierarchical indexing recovers the exhaustive result score at billion document scale [8]."
+    The closest passage matches your wording but qualifies it: it says "not yet". Read the quote. The source may be deferring exactly what your sentence asserts....
+  line 111  citation_not_found  [medium]
+    "Adaptive Query Expansion Under Drift"
+    No record found in the sources queried. That is not proof the work does not exist. Books, theses, standards, older non-English work, and some workshop papers...
+  line 121  citation_not_found  [medium]
+    "Benchmark Saturation in Retrieval Evaluation"
+  line 131  citation_not_found  [medium] advisory
+    "Ranking Under Budget Constraints"
+  line 15   claim_uncheckable  [low] advisory
+    "Recent work may potentially suggest that adaptive expansion could possibly indicate a path fo..."
+    The cited work could not be resolved to a record.
+  line 30   claim_uncheckable  [low] advisory
+    "Sparse retrieval has a long history in the literature [2]."
+  4 more, all of them in .research-better/grounding.json
 [exit 1]
 
 $ rb originality --offline paper.md
 originality          2 overlap(s) against 4 source(s), 2 not retrievable
+                     1 originality_unattributed_overlap, 1 originality_needs_quote_marks
+  line 65   originality_unattributed_overlap  [high]
+    "two signals the total frequency of each query term within a group and for informative terms s..."
+    This run of words appears in a published source and the sentence carries no citation. Quote it and cite it, or write it in your own words. Source: Hierarchic...
+  line 69   originality_needs_quote_marks  [medium]
+    "topical size balanced document groups a query visits using two signals"
+    The sentence cites a source and reproduces its wording without quotation marks. This is the most common honest mistake in academic writing and it is also the...
 [exit 1]
 
 $ rb fluff paper.md
 fluff                39 findings, 10 mechanical, 6 advisory
+                     11 model_vocabulary, 5 filler_openers, 4 unsupported_superlative_claims, and 10 other rule(s)
+  line 9    filler_openers  [high]
+    "It is important to note that"
+    This opener announces that a sentence is coming instead of making a claim. The sentence reads the same without it.
+  line 10   filler_openers  [high]
+    "in today's rapidly evolving landscape"
+  line 10   filler_openers  [high]
+    "As we all know"
+  line 12   filler_openers  [high]
+    "Needless to say"
+  line 15   hedge_adverbs  [high]
+    "potentially"
+    One hedge is normal in academic writing and often correct. Two in one clause cancel each other out and leave the reader unsure what is being claimed. This on...
+  line 15   hedge_adverbs  [high]
+    "possibly"
+  line 16   hedge_adverbs  [high]
+    "somewhat"
+  line 17   filler_openers  [high]
+    "It should be mentioned that"
+  31 more, all of them in .research-better/fluff.json
 [exit 1]
 
 $ rb trace paper.md

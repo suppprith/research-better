@@ -105,16 +105,13 @@ $ rb ingest paper.md
 ingest               54 sentences, 701 words of prose, 9 citations used, 8 in the bibliography
 
 $ rb novelty --confirm-claim paper.md
-novelty              7 orphan paragraph(s), 7 unsupported part(s) of the claim
+novelty              7 orphan paragraph(s), 6 unsupported part(s) of the claim
 
 $ rb ground --offline paper.md
 ground               3 of 8 entries resolved, 1 of 6 sources had full text
 
 $ rb originality --offline paper.md
 originality          2 overlap(s) against 4 source(s), 2 not retrievable
-
-$ rb fluff paper.md
-fluff                39 findings, 10 mechanical, 6 advisory
 
 $ rb trace paper.md
 trace                6 passage(s) flagged, 1 looked at and left alone
@@ -130,9 +127,38 @@ Every summary says what was checked rather than how clean the paper is. "3 of 8
 entries resolved" is a fact. The same thing as a percentage invites being read
 as a grade.
 
-Results land in `.research-better/` next to the draft. Every artifact records
-the hash of the draft it came from, so a pass reading stale analysis warns and
-the edit pass refuses.
+A count is not a result, though, so each pass also prints what it found:
+
+```
+$ rb fluff paper.md
+fluff                39 findings, 10 mechanical, 6 advisory
+                     11 model_vocabulary, 5 filler_openers, 4 unsupported_superlative_claims, and 10 other rule(s)
+  line 9    filler_openers  [high]
+    "It is important to note that"
+    This opener announces that a sentence is coming instead of making a claim. The sentence reads the same without it.
+  line 10   filler_openers  [high]
+    "in today's rapidly evolving landscape"
+  line 10   filler_openers  [high]
+    "As we all know"
+  line 12   filler_openers  [high]
+    "Needless to say"
+  31 more, all of them in .research-better/fluff.json
+```
+
+The second line names the rules behind the count, because "39 findings" says
+nothing about a paper and "11 model_vocabulary, 5 filler_openers" says what is
+wrong with it. Long lists truncate and say how many were withheld. `--quiet`
+prints nothing but warnings, for CI.
+
+`rb run` prints the summary and the causes for each pass and saves the detail
+for the report at the end, because ten passes each printing everything is a
+wall rather than a report.
+
+Results land in `.research-better/` next to the draft, as JSON and as a page
+beside it you can open. `rb findings paper.md` prints those pages back without
+running anything, which is the cheap way to see what a run found after the
+output has scrolled away. Every artifact records the hash of the draft it came
+from, so a pass reading stale analysis warns and the edit pass refuses.
 
 Exit codes: `0` nothing found, `1` findings present, `2` the tool could not do
 its job. The last two are kept apart on purpose, because a build failing on a

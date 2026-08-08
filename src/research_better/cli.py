@@ -23,7 +23,7 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
 
-from research_better import __version__
+from research_better import __version__, present
 from research_better import edit as edit_layer
 from research_better.artifacts import ArtifactStore
 from research_better.errors import ResearchBetterError
@@ -203,6 +203,13 @@ def build_parser() -> argparse.ArgumentParser:
     run = commands.add_parser("run", parents=[parent], help="every implemented pass, in order")
     run.add_argument("draft", type=Path, help="path to the paper")
 
+    already = commands.add_parser(
+        "findings",
+        parents=[parent],
+        help="print what the passes already found, without running anything",
+    )
+    already.add_argument("draft", type=Path, help="path to the paper")
+
     back = commands.add_parser(
         "revert", parents=[parent], help="restore the most recent backup of a draft"
     )
@@ -229,9 +236,37 @@ def build_parser() -> argparse.ArgumentParser:
 # Execution ----------------------------------------------------------------
 
 
-def _emit(console: Console, name: str, result: PassResult, target: Path) -> None:
+def _emit(
+    console: Console,
+    name: str,
+    result: PassResult,
+    target: Path,
+    document: Document | None = None,
+    detailed: bool = True,
+) -> None:
     console.say(f"{console.style.strong(name):<20} {result.summary}")
     console.detail(f"  wrote {target}")
+
+    if result.findings:
+        # A count says nothing about a paper. The rules behind it do, and on
+        # the paper that produced this ticket the causes line alone would have
+        # shown a lexicon bug immediately.
+        console.say(console.style.dim(f"{'':<20} {present.top_causes(result.findings)}"))
+
+    if detailed and result.findings:
+        # An agent driving this CLI reports what it sees and does not go and
+        # read a JSON file it was not told about, so this prints by default.
+        # `--quiet` silences it, which is what CI wants.
+        # Named relative to the artifact directory rather than absolutely. An
+        # author reads `.research-better/fluff.json` and knows where to look,
+        # and a line with a machine's home directory in it is noise in every
+        # transcript it lands in.
+        body = present.render_for_terminal(
+            result.findings, document, f"{target.parent.name}/{target.name}"
+        )
+        if body:
+            console.say(body)
+
     if result.stdout:
         # A page that lands in .research-better/ and is never opened is not a
         # page an author reads.
@@ -245,6 +280,7 @@ def _run_one(
     store: ArtifactStore,
     console: Console,
     source_hash: str,
+    detailed: bool = True,
 ) -> tuple[int, dict[str, object]]:
     entry = PASSES[name]
     if not entry.implemented or entry.run is None:
@@ -256,11 +292,19 @@ def _run_one(
 
     result = entry.run(context)
     target = store.write(entry.artifact, result.payload, source_hash, offline=context.offline)
-    if result.markdown is not None:
-        store.write_text(entry.artifact, result.markdown, source_hash)
+
+    # A page beside the JSON, for every pass that found something, written here
+    # rather than by each pass. The failure this fixes was a pass forgetting,
+    # so the place to put the fix is the one path every pass goes through.
+    markdown = result.markdown
+    if markdown is None and result.findings:
+        markdown = present.render_for_file(name, result.findings, context.document)
+    if markdown is not None:
+        store.write_text(entry.artifact, markdown, source_hash)
+
     for suffix, body in result.attachments:
         store.write_text(entry.artifact, body, source_hash, suffix=suffix)
-    _emit(console, name, result, target)
+    _emit(console, name, result, target, context.document, detailed=detailed)
 
     return (
         EXIT_FINDINGS if result.findings or result.counts_as_finding else EXIT_CLEAN,
@@ -287,6 +331,56 @@ def _load_document(args: argparse.Namespace) -> Document:
             )
         return load(path.with_suffix(suffixes[adapter]), text=text)
     return load(path)
+
+
+def findings(args: argparse.Namespace, console: Console) -> int:
+    """Print what the passes already found, without running anything.
+
+    Cheap, offline, and the thing to tell somebody who ran the passes and got
+    counts back. It reads the pages written beside each artifact rather than
+    recomputing, so what it prints is what the run actually recorded, and a
+    stale one is reported as stale rather than quietly refreshed.
+    """
+    draft = Path(args.draft)
+    if not draft.is_file():
+        raise ResearchBetterError(f"{draft} does not exist")
+
+    store = ArtifactStore(draft)
+    source_hash = Document.hash_source(draft.read_bytes().decode("utf-8"))
+
+    shown = 0
+    for name, entry in PASSES.items():
+        page = store.path_for(entry.artifact, ".md")
+        if not page.is_file():
+            continue
+
+        artifact = store.read(entry.artifact)
+        if artifact is not None and artifact.is_stale(source_hash):
+            console.warn(
+                f"{page.name} describes an older version of {draft.name}. "
+                f"Run: {PROGRAM} {name} {draft}"
+            )
+
+        if shown:
+            console.say()
+        console.say(console.style.strong(f"--- {page.name} ---"))
+        # The provenance comment is for whoever opens the file. Staleness is
+        # already reported above, in a line aimed at a reader rather than at a
+        # diff.
+        body = page.read_text(encoding="utf-8")
+        if body.startswith("<!--"):
+            body = body.split("-->", 1)[-1]
+        console.say(body.strip())
+        shown += 1
+
+    if not shown:
+        # Not an error, and not silence either. Nothing on disk and a paper
+        # with nothing wrong with it look identical from here, and only one of
+        # them is true.
+        console.say(
+            f"No analysis has been written for {draft.name} yet. Run: {PROGRAM} run {draft}"
+        )
+    return EXIT_CLEAN
 
 
 def revert(args: argparse.Namespace, console: Console) -> int:
@@ -443,7 +537,17 @@ def run(args: argparse.Namespace, console: Console) -> int:
                     blocked.append((name, str(error)))
                     continue
 
-            outcome, entry = _run_one(name, context, store, console, source_hash)
+            # Ten passes each printing every finding is a wall, not a report,
+            # and `run` ends with the report anyway. Asked for a pass by name,
+            # which is the path an agent takes, the findings are printed.
+            outcome, entry = _run_one(
+                name,
+                context,
+                store,
+                console,
+                source_hash,
+                detailed=args.command != "run",
+            )
             status = max(status, outcome)
             report.append(entry)
 
@@ -495,7 +599,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Neither of these is a pass. One restores a backup and reads no artifact,
     # and the other answers questions about the install rather than about a
     # paper, so neither takes a draft.
-    standalone = {"revert": revert, "doctor": doctor}
+    standalone = {"revert": revert, "doctor": doctor, "findings": findings}
 
     try:
         handler = standalone.get(args.command)

@@ -5,6 +5,7 @@ complete -c research-better -f
 complete -c research-better -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
 complete -c research-better -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c research-better -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
+complete -c research-better -n __fish_use_subcommand -a findings -d 'print what the passes already found, without running anything'
 complete -c research-better -n __fish_use_subcommand -a fluff -d 'find text that does not serve the papers argument'
 complete -c research-better -n __fish_use_subcommand -a ground -d 'verify citations against the literature'
 complete -c research-better -n __fish_use_subcommand -a ingest -d 'parse the draft and write its structure'
@@ -47,6 +48,15 @@ complete -c research-better -n '__fish_seen_subcommand_from edit' -l refresh
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l target-reduction
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l venue
 complete -c research-better -n '__fish_seen_subcommand_from edit' -l verbose
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l format
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l help
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l json
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l no-color
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l offline
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l quiet
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l refresh
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l venue
+complete -c research-better -n '__fish_seen_subcommand_from findings' -l verbose
 complete -c research-better -n '__fish_seen_subcommand_from fluff' -l format
 complete -c research-better -n '__fish_seen_subcommand_from fluff' -l help
 complete -c research-better -n '__fish_seen_subcommand_from fluff' -l json
@@ -146,6 +156,7 @@ complete -c rb -f
 complete -c rb -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
 complete -c rb -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c rb -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
+complete -c rb -n __fish_use_subcommand -a findings -d 'print what the passes already found, without running anything'
 complete -c rb -n __fish_use_subcommand -a fluff -d 'find text that does not serve the papers argument'
 complete -c rb -n __fish_use_subcommand -a ground -d 'verify citations against the literature'
 complete -c rb -n __fish_use_subcommand -a ingest -d 'parse the draft and write its structure'
@@ -188,6 +199,15 @@ complete -c rb -n '__fish_seen_subcommand_from edit' -l refresh
 complete -c rb -n '__fish_seen_subcommand_from edit' -l target-reduction
 complete -c rb -n '__fish_seen_subcommand_from edit' -l venue
 complete -c rb -n '__fish_seen_subcommand_from edit' -l verbose
+complete -c rb -n '__fish_seen_subcommand_from findings' -l format
+complete -c rb -n '__fish_seen_subcommand_from findings' -l help
+complete -c rb -n '__fish_seen_subcommand_from findings' -l json
+complete -c rb -n '__fish_seen_subcommand_from findings' -l no-color
+complete -c rb -n '__fish_seen_subcommand_from findings' -l offline
+complete -c rb -n '__fish_seen_subcommand_from findings' -l quiet
+complete -c rb -n '__fish_seen_subcommand_from findings' -l refresh
+complete -c rb -n '__fish_seen_subcommand_from findings' -l venue
+complete -c rb -n '__fish_seen_subcommand_from findings' -l verbose
 complete -c rb -n '__fish_seen_subcommand_from fluff' -l format
 complete -c rb -n '__fish_seen_subcommand_from fluff' -l help
 complete -c rb -n '__fish_seen_subcommand_from fluff' -l json
