@@ -158,6 +158,23 @@ what is cached and fails loudly when something is missing, rather than
 returning nothing and letting an unverified citation look like a finding about
 your paper. `--refresh` fetches again.
 
+### Set a Semantic Scholar key if your bibliography is large
+
+```
+export SEMANTIC_SCHOLAR_API_KEY="..."
+```
+
+Optional, free, and the one setting that actually changes how long `ground`
+takes. Semantic Scholar rate limits an anonymous caller hard: on a 19-entry
+bibliography it answered 4 and refused 15. Without a key the tool paces itself
+well below the published limit and stops asking a source that has refused
+several entries in a row, so a refusing source costs you its answers rather
+than your afternoon. Request a key at
+<https://www.semanticscholar.org/product/api>.
+
+The key is read from the environment and sent as a header. It is never written
+to an artifact, never part of a cache key, and never logged.
+
 ## How it works
 
 Ten passes, run in this order because each reads what the one before it

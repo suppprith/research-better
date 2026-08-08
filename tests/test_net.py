@@ -368,3 +368,254 @@ def test_cache_lifetimes_reflect_what_changes() -> None:
     # A resolved DOI says the same thing next year. A search does not.
     assert limits.record_ttl_seconds > limits.search_ttl_seconds
     assert limits.fulltext_ttl_seconds > limits.search_ttl_seconds
+
+
+# A refusing source must not cost the rest of the run ----------------------
+#
+# Timing `ground` on a real paper: 19 bibliography entries took roughly four
+# and a half minutes, and most of it was waiting on a source that was refusing
+# us. Semantic Scholar answered 4 of 19 and rate limited the rest, and each
+# refusal paid four full bucket waits plus backoff before the source was given
+# up on.
+
+
+class FakeClock:
+    """A clock the test drives, so pacing is measured rather than waited out.
+
+    Every sleep in the code under test advances it, which is what a real sleep
+    does. Without that the bucket spins: it waits for tokens that only accrue
+    with time.
+    """
+
+    def __init__(self) -> None:
+        # Started from the real clock rather than from zero. `TokenBucket`
+        # captures `time.monotonic` as a dataclass default factory when the
+        # class is defined, so a bucket built during the test stamps itself
+        # with the real clock however thoroughly the module is patched, and a
+        # fake clock starting at zero makes that stamp look like a wait of
+        # several days.
+        self.start = time.monotonic()
+        self.now = self.start
+        self.slept: list[float] = []
+
+    @property
+    def elapsed(self) -> float:
+        return self.now - self.start
+
+    def monotonic(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.slept.append(seconds)
+        self.now += seconds
+
+
+def fake_clock(monkeypatch: pytest.MonkeyPatch) -> FakeClock:
+    clock = FakeClock()
+    monkeypatch.setattr(time, "monotonic", clock.monotonic)
+    monkeypatch.setattr(time, "sleep", clock.sleep)
+    return clock
+
+
+def bucket_waits(client: PoliteClient, source: str) -> list[float]:
+    """How long the token bucket made each request wait, one entry per acquire.
+
+    The bucket is what makes the pacing correct and slow, so its waits are the
+    measurement. The backoff between attempts is a separate cost and stays.
+    """
+    waits: list[float] = []
+    bucket = client.buckets.for_source(source)
+    original = bucket.acquire
+
+    def counting(sleep: object = None) -> float:
+        waited = original(sleep=sleep)
+        waits.append(waited)
+        return waited
+
+    bucket.acquire = counting  # type: ignore[method-assign]
+    return waits
+
+
+def always_429(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(429, request=request)
+
+
+def test_a_failing_request_pays_one_bucket_wait_not_four(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The fix, measured. Four 429s used to cost four full bucket waits.
+
+    At Semantic Scholar's one request per five seconds that is twenty seconds
+    of pacing spent on attempts that were never going to succeed.
+    """
+    clock = fake_clock(monkeypatch)
+
+    with PoliteClient(cache, transport=stub_transport(always_429)) as client:
+        # Drain the burst so the next acquire has to wait for a token, which is
+        # the state a bibliography's sixteenth entry is actually in.
+        client.buckets.for_source("semantic_scholar").acquire()
+        waits = bucket_waits(client, "semantic_scholar")
+
+        with pytest.raises(SourceUnavailableError):
+            client.get("semantic_scholar", "https://api.semanticscholar.org/graph/v1/paper/x")
+
+        assert client.requests_made == 4, "all four attempts should still be made"
+        assert len(waits) == 1, (
+            f"acquired the bucket {len(waits)} times for one request. The bucket "
+            f"spaces out successful traffic, and a retry after a 429 already has the "
+            f"backoff between attempts."
+        )
+        # 0.2 requests per second is one every five seconds. Four acquisitions
+        # would have been twenty seconds of pacing on a request that was never
+        # going to succeed.
+        assert sum(waits) == pytest.approx(5.0)
+        assert clock.elapsed < 20.0
+
+
+def test_the_pacing_itself_is_not_loosened(cache: HttpCache) -> None:
+    """`source-limits.toml` sits deliberately below what each source documents.
+    Being slow there is the tool behaving well, and this fix must not change
+    it."""
+    assert load_limits().for_source("semantic_scholar").requests_per_second == 0.2
+
+
+def test_a_source_refusing_repeatedly_is_stopped_being_asked(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fifteen consecutive refusals from one source is a fact about the session,
+    not about the sixteenth bibliography entry."""
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+
+    with PoliteClient(cache, transport=stub_transport(always_429)) as client:
+        for entry in range(6):
+            with pytest.raises(SourceUnavailableError):
+                client.get("crossref", f"https://api.crossref.org/works/{entry}")
+
+        # Three entries at four attempts each, then nothing.
+        assert client.requests_made == 12
+        assert client.given_up_on == ("crossref",)
+
+
+def test_giving_up_is_reported_rather_than_silent(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The refusal is raised the way a real failure is, so it lands in
+    `sources_unavailable`. A source that quietly stopped answering is
+    indistinguishable from a literature that has nothing to say."""
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+
+    with PoliteClient(cache, transport=stub_transport(always_429)) as client:
+        for entry in range(4):
+            with pytest.raises(SourceUnavailableError) as error_info:
+                client.get("crossref", f"https://api.crossref.org/works/{entry}")
+
+    message = str(error_info.value)
+    assert "not asked again" in message
+    assert "nothing was guessed" in message
+
+
+def test_a_source_that_recovers_is_used_again(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Three refusals rather than one, because a single 429 can be a burst that
+    has passed by the next entry."""
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    state = {"fail": True}
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        if state["fail"]:
+            return httpx.Response(429, request=request)
+        return httpx.Response(200, json={"ok": True}, request=request)
+
+    with PoliteClient(cache, transport=stub_transport(handle)) as client:
+        for entry in range(2):
+            with pytest.raises(SourceUnavailableError):
+                client.get("crossref", f"https://api.crossref.org/works/{entry}")
+
+        state["fail"] = False
+        assert client.get("crossref", "https://api.crossref.org/works/3").ok
+        assert client.given_up_on == ()
+
+        state["fail"] = True
+        with pytest.raises(SourceUnavailableError):
+            client.get("crossref", "https://api.crossref.org/works/4")
+        assert client.given_up_on == (), "a success resets the count"
+
+
+# The remedy for a large bibliography --------------------------------------
+
+
+def test_an_api_key_is_sent_when_the_user_has_set_one(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The actual fix for somebody with eighty references. Free, and it raises
+    the Semantic Scholar limit by two orders of magnitude."""
+    monkeypatch.setenv("SEMANTIC_SCHOLAR_API_KEY", "secret-key")
+    seen: dict[str, str] = {}
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        seen.update(request.headers)
+        return httpx.Response(200, json={"ok": True}, request=request)
+
+    with PoliteClient(cache, transport=stub_transport(handle)) as client:
+        client.get("semantic_scholar", "https://api.semanticscholar.org/graph/v1/paper/x")
+
+    assert seen.get("x-api-key") == "secret-key"
+
+
+def test_no_key_is_sent_when_none_is_configured(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SEMANTIC_SCHOLAR_API_KEY", raising=False)
+    seen: dict[str, str] = {}
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        seen.update(request.headers)
+        return httpx.Response(200, json={"ok": True}, request=request)
+
+    with PoliteClient(cache, transport=stub_transport(handle)) as client:
+        client.get("semantic_scholar", "https://api.semanticscholar.org/graph/v1/paper/x")
+
+    assert "x-api-key" not in seen
+
+
+def test_the_key_does_not_change_the_cache_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A key changes which quota serves the request, never what comes back.
+    Keying the cache on it would give two users different keys for the same
+    question, and would write a secret into a filename."""
+    monkeypatch.setenv("SEMANTIC_SCHOLAR_API_KEY", "secret-key")
+    with_key = cache_key("GET", "https://api.semanticscholar.org/graph/v1/paper/x")
+    monkeypatch.delenv("SEMANTIC_SCHOLAR_API_KEY")
+    without = cache_key("GET", "https://api.semanticscholar.org/graph/v1/paper/x")
+    assert with_key == without
+
+
+def test_a_refusing_source_no_longer_costs_the_whole_run(
+    cache: HttpCache, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The two fixes together, as the number the ticket asked for.
+
+    19 bibliography entries against a source refusing every one, which is what
+    a real paper produced. Measured with a fake clock, the pacing cost was:
+
+        v0.1.0, acquiring per attempt with no giving up   375.0s
+        acquiring once per request                        102.1s
+        plus giving up after three refusals                15.0s
+
+    The bound below is deliberately loose. It is here to fail if either
+    mechanism is removed, not to pin an exact number that a change to the
+    backoff would break for no reason.
+    """
+    clock = fake_clock(monkeypatch)
+
+    with PoliteClient(cache, transport=stub_transport(always_429)) as client:
+        for entry in range(19):
+            with pytest.raises(SourceUnavailableError):
+                client.get("semantic_scholar", f"https://api.semanticscholar.org/paper/{entry}")
+
+    assert clock.elapsed < 60.0, (
+        f"19 refused entries cost {clock.elapsed:.1f}s of pacing. The bucket exists "
+        f"to space out successful traffic, and a source refusing the whole run is a "
+        f"fact about the session rather than about the next entry."
+    )
+    assert client.given_up_on == ("semantic_scholar",)

@@ -34,6 +34,20 @@ class SourceLimit:
     documented: str
     polite_parameter: str | None = None
 
+    api_key_environment_variable: str | None = None
+    api_key_header: str | None = None
+    """Where a user's own key for this source is read from, and the header it
+    goes in. The key itself is never stored here or in any artifact: a source
+    that rate limits an anonymous caller hard is one where a key is the real
+    remedy, and the tool should be able to use one without learning it."""
+
+    def api_key(self) -> str | None:
+        import os
+
+        if not self.api_key_environment_variable:
+            return None
+        return os.environ.get(self.api_key_environment_variable) or None
+
 
 @dataclass(frozen=True, slots=True)
 class Limits:
@@ -84,6 +98,14 @@ def parse_limits(data: dict[str, Any]) -> Limits:
             documented=str(section.get("documented", "")),
             polite_parameter=(
                 str(section["polite_parameter"]) if section.get("polite_parameter") else None
+            ),
+            api_key_environment_variable=(
+                str(section["api_key_environment_variable"])
+                if section.get("api_key_environment_variable")
+                else None
+            ),
+            api_key_header=(
+                str(section["api_key_header"]) if section.get("api_key_header") else None
             ),
         )
     if not sources:

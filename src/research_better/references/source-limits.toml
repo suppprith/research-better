@@ -31,10 +31,22 @@ documented = "no published hard limit for the public pool, but it is shared and 
 polite_parameter = "mailto"
 
 [semantic_scholar]
+# This is the source that actually costs you time. Timing `ground` on a real
+# paper, Semantic Scholar answered 4 of 19 bibliography entries and rate
+# limited the other 15, and that accounted for most of a four and a half minute
+# run.
+#
+# The remedy for a large bibliography is an API key, which is free and raises
+# the limit by two orders of magnitude. Request one at
+# https://www.semanticscholar.org/product/api and set SEMANTIC_SCHOLAR_API_KEY.
+# Without one the pacing below is correct and slow, and the tool gives up on
+# the source after a few refusals rather than paying the wait for every entry.
 base_url = "https://api.semanticscholar.org"
 requests_per_second = 0.2
 burst = 1
 documented = "roughly 100 requests per five minutes without an API key, which is one every three seconds. Rate limited hard, and the 429 arrives without warning"
+api_key_environment_variable = "SEMANTIC_SCHOLAR_API_KEY"
+api_key_header = "x-api-key"
 
 [arxiv]
 base_url = "https://export.arxiv.org"

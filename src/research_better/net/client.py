@@ -25,7 +25,7 @@ import httpx
 from research_better import __version__
 from research_better.errors import ResearchBetterError
 from research_better.net.cache import CacheEntry, HttpCache, cache_key, normalize_request
-from research_better.net.limits import BucketRegistry, Limits, load_limits
+from research_better.net.limits import BucketRegistry, Limits, SourceLimit, load_limits
 
 PROJECT_URL = "https://github.com/suppprith/research-better"
 CONTACT_ENVIRONMENT_VARIABLE = "RESEARCH_BETTER_CONTACT"
@@ -35,6 +35,19 @@ BACKOFF_BASE_SECONDS = 1.0
 BACKOFF_CAP_SECONDS = 30.0
 
 RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
+
+CONSECUTIVE_FAILURES_BEFORE_GIVING_UP = 3
+"""How many entries in a row a source may fail before it is stopped asking.
+
+Fifteen consecutive refusals from one source is a fact about the session, not
+about the sixteenth bibliography entry. Timing `ground` on a real paper, 19
+entries took roughly four and a half minutes and most of it was waiting on a
+source that was refusing us: Semantic Scholar answered 4 of 19 and rate
+limited the rest.
+
+Three rather than one, because a single 429 can be a burst that has passed by
+the next entry, and a source that recovers should be used.
+"""
 
 
 class OfflineCacheMissError(ResearchBetterError):
@@ -132,6 +145,9 @@ class PoliteClient:
         """Counts real outbound requests. Tests assert this is zero on a warm
         cache, which is the only way to be sure the cache is actually used."""
 
+        self._consecutive_failures: dict[str, int] = {}
+        self._failure_lock = threading.Lock()
+
     def close(self) -> None:
         self._client.close()
 
@@ -179,7 +195,7 @@ class PoliteClient:
         if self.offline:
             raise OfflineCacheMissError(source, request_description)
 
-        response = self._fetch(source, url, params)
+        response = self._fetch(source, url, params, self._authorization(limit))
         self.cache.write(
             CacheEntry(
                 key=key,
@@ -200,20 +216,43 @@ class PoliteClient:
             from_cache=False,
         )
 
-    def _fetch(self, source: str, url: str, params: dict[str, str]) -> httpx.Response:
+    def _authorization(self, limit: SourceLimit) -> dict[str, str]:
+        """A user's own API key for this source, if they have set one.
+
+        Not part of the cache key, for the same reason the contact address is
+        not: a key changes which quota serves the request, never what comes
+        back.
+        """
+        key = limit.api_key()
+        return {limit.api_key_header: key} if key and limit.api_key_header else {}
+
+    def _fetch(
+        self, source: str, url: str, params: dict[str, str], headers: dict[str, str] | None = None
+    ) -> httpx.Response:
+        self._refuse_if_given_up(source)
+
+        # Once per request, not once per attempt. The bucket exists to space
+        # out successful traffic, and paying it again for a retry charges the
+        # pacing cost for an attempt that was never going to succeed. At
+        # Semantic Scholar's one request per five seconds, a single failing
+        # lookup was costing twenty seconds of pacing before the source was
+        # given up on. The backoff between attempts already provides spacing,
+        # and `Retry-After` already wins when the server sends one.
+        self.buckets.for_source(source).acquire()
+
         last_reason = "unknown"
         for attempt in range(1, MAXIMUM_ATTEMPTS + 1):
-            self.buckets.for_source(source).acquire()
             response: httpx.Response | None = None
             with self._in_flight:
                 self.requests_made += 1
                 try:
-                    response = self._client.get(url, params=params)
+                    response = self._client.get(url, params=params, headers=headers or None)
                 except httpx.HTTPError as error:
                     last_reason = f"{type(error).__name__}: {error}"
 
             if response is not None:
                 if response.status_code not in RETRYABLE_STATUS:
+                    self._record_success(source)
                     return response
                 last_reason = f"HTTP {response.status_code}"
 
@@ -221,7 +260,47 @@ class PoliteClient:
                 break
             time.sleep(self._backoff(attempt, response))
 
+        self._record_failure(source)
         raise SourceUnavailableError(source, f"{last_reason} after {MAXIMUM_ATTEMPTS} attempts")
+
+    # Giving up on a source -------------------------------------------------
+
+    def _refuse_if_given_up(self, source: str) -> None:
+        """Stop asking a source that has refused the last several entries.
+
+        The refusal is raised the same way a real failure is, so it arrives in
+        `sources_unavailable` and is reported rather than being a silent gap.
+        What the caller loses is the wait.
+        """
+        with self._failure_lock:
+            failures = self._consecutive_failures.get(source, 0)
+        if failures >= CONSECUTIVE_FAILURES_BEFORE_GIVING_UP:
+            raise SourceUnavailableError(
+                source,
+                f"refused {failures} requests in a row, so it was not asked again. "
+                f"Its answers are missing from this run and nothing was guessed in "
+                f"their place",
+            )
+
+    def _record_failure(self, source: str) -> None:
+        with self._failure_lock:
+            self._consecutive_failures[source] = self._consecutive_failures.get(source, 0) + 1
+
+    def _record_success(self, source: str) -> None:
+        with self._failure_lock:
+            self._consecutive_failures.pop(source, None)
+
+    @property
+    def given_up_on(self) -> tuple[str, ...]:
+        """Sources this run stopped asking, for a report that has to say so."""
+        with self._failure_lock:
+            return tuple(
+                sorted(
+                    name
+                    for name, count in self._consecutive_failures.items()
+                    if count >= CONSECUTIVE_FAILURES_BEFORE_GIVING_UP
+                )
+            )
 
     def _backoff(self, attempt: int, response: httpx.Response | None) -> float:
         """Exponential with jitter, and `Retry-After` wins when the server sent one.
