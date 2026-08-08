@@ -22,7 +22,7 @@ paper stops sounding like its author.
 ## Before anything else
 
 ```
-rb doctor --expect 0.1.0
+rb doctor --expect 0.2.0
 ```
 
 **If that command is not found, stop** and tell the user to run
@@ -76,7 +76,8 @@ prose, and `references/final-analysis.md` is not optional reading.
 ## Reading the output
 
 Each pass prints what it found, not only how many, and `rb findings <draft>`
-prints everything already on disk without rerunning anything. The tool enforces what it can: an advisory finding is never auto-applicable,
+prints everything already on disk without rerunning anything. The tool enforces
+what it can: an advisory finding is never auto-applicable,
 only a high-severity deletion is, `edit` refuses without fresh evidence and a
 confirmed claim, and nothing emits a percentage. Those are checks rather than
 things to remember, listed with their tests in `docs/GUARANTEES.md`. What is

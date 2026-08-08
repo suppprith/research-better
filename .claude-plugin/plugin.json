@@ -1,7 +1,7 @@
 {
   "name": "research-better",
   "displayName": "research-better",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Improve a research paper by checking it. Verifies citations against real literature, cuts text that does not serve the novelty claim, checks for unattributed overlap, and raises the questions a reviewer will ask. Does not write replacement prose.",
   "author": {
     "name": "Suprith R B",
