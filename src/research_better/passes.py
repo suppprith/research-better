@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from research_better import edit as edit_layer
-from research_better import fluff, grounding, novelty, reviewer, voice
+from research_better import fluff, grounding, novelty, reviewer, trace, voice
 from research_better import report as reporting
 from research_better.artifacts import ArtifactStore
 from research_better.findings import Finding, Severity, Suggestion
@@ -311,6 +311,34 @@ def _edit(context: PassContext) -> PassResult:
     )
 
 
+def _trace(context: PassContext) -> PassResult:
+    # The grounding artifact is read rather than recomputed, because claim
+    # support is the one signal here that needs the network. Everything else is
+    # measured from the document, so this pass works with nothing on disk and
+    # says what it could not see instead of quietly narrowing.
+    store = context.require_store("trace")
+    artifact = store.read("grounding")
+    payload = (
+        artifact.payload
+        if artifact is not None and not artifact.is_stale(context.document.source_hash)
+        else None
+    )
+
+    report = trace.analyse(context.document, payload)
+    return PassResult(
+        payload=report.to_json(),
+        # Counts and causes. A share here would be read as an AI score whatever
+        # it was labelled, and a number on a paragraph is a number to optimize
+        # against.
+        summary=(
+            f"{len(report.flagged)} passage(s) flagged, "
+            f"{len(report.left_alone)} looked at and left alone"
+        ),
+        markdown=trace.to_markdown(report),
+        counts_as_finding=bool(report.flagged),
+    )
+
+
 def _report(context: PassContext) -> PassResult:
     store = context.require_store("report")
     thresholds = reporting.CheckThresholds.load(store.draft)
@@ -425,6 +453,14 @@ PASSES: dict[str, Pass] = {
         run=_edit,
         preflight=_require_evidence,
     ),
+    "trace": Pass(
+        name="trace",
+        artifact="trace",
+        help="passages that may read as machine-written, with the cause and the fix",
+        implemented=True,
+        phase="P6 reporting and format coverage",
+        run=_trace,
+    ),
     "report": Pass(
         name="report",
         artifact="report",
@@ -442,12 +478,14 @@ RUN_ORDER = (
     "ground",
     "originality",
     "fluff",
+    "trace",
     "ask",
     "edit",
     "report",
 )
-"""The order `run` walks. Ingest first because everything reads its output, and
-voice before any pass that could propose words."""
+"""The order `run` walks. Ingest first because everything reads its output,
+voice before any pass that could propose words, and trace after grounding and
+fluff because it is a synthesis of what they found."""
 
 
 def implemented() -> tuple[str, ...]:

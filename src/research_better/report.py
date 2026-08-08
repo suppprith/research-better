@@ -43,6 +43,7 @@ REGENERATE = {
     "voice": "voice",
     "reviewer-questions": "ask",
     "edits": "edit",
+    "trace": "trace",
 }
 """Artifact to the command that produces it. A gap the report names is only
 useful with the command that fills it."""
@@ -122,6 +123,13 @@ class Report:
     questions: dict[str, int] = field(default_factory=dict)
     blocking: tuple[str, ...] = ()
 
+    trace_flagged: tuple[tuple[str, str], ...] = ()
+    """(where, causes) for each passage the trace audit flagged. Named rather
+    than counted alone, because the cause is the whole output: a count of
+    passages with no causes beside it is a score in disguise."""
+
+    trace_left_alone: int = 0
+
     gaps: tuple[str, ...] = ()
 
     @property
@@ -169,6 +177,10 @@ class Report:
             "cuts_refused": self.cuts_refused,
             "questions": dict(self.questions),
             "blocking": list(self.blocking),
+            "trace": {
+                "flagged": [list(row) for row in self.trace_flagged],
+                "left_alone": self.trace_left_alone,
+            },
             "not_checked": list(self.gaps),
         }
 
@@ -218,6 +230,7 @@ def build(document: Document, store: ArtifactStore) -> Report:
     questions = read("reviewer-questions") or {}
     originality = read("originality") or {}
     edits = read("edits") or {}
+    trace = read("trace") or {}
 
     citations = grounding.get("citations") or {}
     claims = grounding.get("claims") or {}
@@ -280,6 +293,16 @@ def build(document: Document, store: ArtifactStore) -> Report:
             "proposed": len(edits.get("edits") or ()),
         },
         cuts_refused=len(edits.get("dropped") or ()),
+        trace_flagged=tuple(
+            (
+                str(row.get("where")),
+                " + ".join(
+                    str(signal.get("id")).replace("_", " ") for signal in row.get("signals") or ()
+                ),
+            )
+            for row in trace.get("flagged") or ()
+        ),
+        trace_left_alone=len(trace.get("left_alone") or ()),
         questions=dict(questions.get("counts") or {}),
         blocking=tuple(
             question["question"]
@@ -335,6 +358,18 @@ def to_markdown(report: Report, thresholds: CheckThresholds | None = None) -> st
     for question in report.blocking:
         lines.append(f"- {question}")
     if report.blocking:
+        lines.append("")
+
+    # Causes beside the count, always. A count on its own is a score in
+    # disguise, and a score is the thing an author starts writing towards.
+    lines += [
+        f"**May read as machine-written.** {len(report.trace_flagged)} passage(s), "
+        f"{report.trace_left_alone} looked at and left alone as likely false positives.",
+        "",
+    ]
+    for where, causes in report.trace_flagged:
+        lines.append(f"- {where}: {causes}")
+    if report.trace_flagged:
         lines.append("")
 
     lines += ["## Not checked", ""]
@@ -399,6 +434,21 @@ def to_html(report: Report, thresholds: CheckThresholds | None = None) -> str:
     if report.blocking:
         body.append(
             "<ul>" + "".join(f"<li>{escape(item)}</li>" for item in report.blocking) + "</ul>"
+        )
+
+    body.append(
+        f"<p><strong>May read as machine-written.</strong> "
+        f"{len(report.trace_flagged)} passage(s), {report.trace_left_alone} looked at "
+        f"and left alone as likely false positives.</p>"
+    )
+    if report.trace_flagged:
+        body.append(
+            "<ul>"
+            + "".join(
+                f"<li>{escape(where)}: {escape(causes)}</li>"
+                for where, causes in report.trace_flagged
+            )
+            + "</ul>"
         )
 
     body += [

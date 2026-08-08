@@ -29,6 +29,7 @@ Or one pass at a time:
 research-better ingest paper.md    # parse and write the structure
 research-better fluff  paper.md    # text that does not serve the argument
 research-better voice  paper.md    # how the author writes, for later edits
+research-better trace  paper.md    # passages that may read as machine-written
 ```
 
 Results land in `.research-better/` next to the draft. Every artifact records
@@ -112,6 +113,17 @@ Three limits come with it, and all three are stated rather than worked around.
    access full text it can actually retrieve, so it reports what it could not see
    alongside what it found. It is not a substitute for Turnitin and does not
    claim to be.
+
+`research-better trace` is where this is most visible. It names the passages
+that carry the signals a human reader picks up on and gives each one a cause and
+a fix, and every fix has to stand on its own as better writing: add the number,
+add the citation, cut the filler. There is no row that says replace this word
+with a rarer one. Signals that misfire on non-native English and on formulaic
+methods prose can never flag a passage by themselves, and passages that tripped
+only those are reported in a separate list as looked at and left alone.
+
+The reasoning is written out in [docs/INTEGRITY.md](docs/INTEGRITY.md), so it
+can be argued with rather than assumed.
 
 ## License
 

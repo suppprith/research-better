@@ -34,9 +34,10 @@ when it returns nothing.
 | 5 | `rb ground <draft>` | `references/grounding-protocol.md` |
 | 6 | `rb originality <draft>` | `references/grounding-protocol.md` |
 | 7 | `rb fluff <draft>` | nothing, the lexicon is data the script reads |
-| 8 | `rb ask <draft>` | `references/reviewer-questions.md` |
-| 9 | `rb edit <draft>` | `references/voice-preservation.md` |
-| 10 | `rb report <draft>` | nothing |
+| 8 | `rb trace <draft>` | `docs/INTEGRITY.md` |
+| 9 | `rb ask <draft>` | `references/reviewer-questions.md` |
+| 10 | `rb edit <draft>` | `references/voice-preservation.md` |
+| 11 | `rb report <draft>` | nothing |
 
 Read a reference only when its step runs. Loading all of them costs the context
 the paper needs.
@@ -47,9 +48,14 @@ wrong, every cut after it is wrong. If the pass reports that no claim could be
 found, tell the user exactly that and stop. A paper whose novelty cannot be
 read off its own opening has a problem that tightening the prose will not fix.
 
-Step 9 refuses until steps 2 and 4 to 7 have all run against the current draft
+Step 8 synthesizes what the earlier steps found into passages that may read as
+machine-written, each with its cause and its fix. Its second list matters as
+much as its first: passages it looked at and left alone. Report both. Never
+turn one of its causes into a rewording.
+
+Step 10 refuses until steps 2 and 4 to 7 have all run against the current draft
 and the claim is confirmed. That is the point of it: nothing gets written
-before the research is on disk. Step 10 reads whatever exists and names what
+before the research is on disk. Step 11 reads whatever exists and names what
 does not, so it is worth running even after a partial pass.
 
 ## Reading the output
@@ -100,6 +106,11 @@ Non-native English phrasing and formulaic methods prose are common false
 positives. When the deterministic passes flag something that looks like a false
 positive, say "likely a false positive, leave it" rather than proposing a
 change. Being wrong in that direction costs the author nothing.
+
+`rb trace` already separates these out. Its `left_alone` list is passages that
+tripped a texture signal and nothing else, each with the reason it was left.
+Read that list out rather than quietly dropping it: an author who is told what
+was looked at and not changed can trust the flags that remain.
 
 ## Install
 
