@@ -37,6 +37,7 @@ ADAPTERS: dict[str, Adapter] = {
     ".tex": Adapter("research_better.ingest.latex", "latex", extra="latex"),
     ".ltx": Adapter("research_better.ingest.latex", "latex", extra="latex"),
     ".docx": Adapter("research_better.ingest.word", "word", extra="docx", binary=True),
+    ".pdf": Adapter("research_better.ingest.pdf", "pdf", extra="pdf", binary=True),
 }
 
 

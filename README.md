@@ -71,6 +71,37 @@ pip install "research-better[pdf]"     # PDF, review only
 pip install "research-better[all]"
 ```
 
+## Formats
+
+| Format   | Read | `--apply` writes back    |
+| -------- | ---- | ------------------------ |
+| Markdown | yes  | yes                      |
+| LaTeX    | yes  | yes                      |
+| Word     | yes  | yes, as tracked changes  |
+| PDF      | yes  | no                       |
+
+### PDF is review only
+
+A PDF is a rendering rather than a source, and the common reason to read one is
+that it is the only artifact there is: somebody else's paper, or the submitted
+version of your own. Citation verification is the pass that works best on it.
+Three limits come with it, and all three are stated rather than worked around.
+
+1. **`--apply` refuses.** Editing a PDF would mean rebuilding a document the
+   tool only partly understands, and the result would not be the file you
+   compile from. Read the report and change the source.
+2. **Artifacts do not carry over between builds.** A span id is a hash of the
+   sentence and its section path, and a recompile reflows lines and breaks words
+   in different places, so findings recorded against one PDF do not point at the
+   same text in the next.
+3. **Extraction quality varies, so it is measured rather than assumed.** Two
+   column layouts, running headers, footers, page numbers, margin line numbers,
+   and words hyphenated across a line break are handled, and tables and captions
+   are located and skipped rather than read as sentences. Anything the reader was
+   unsure about is printed in the report. A scan carries images rather than text,
+   and ingest refuses it and says to run OCR first, because a clean report about
+   a paper the tool never read is worse than no report.
+
 ## Two things this tool will not do
 
 1. **It attacks causes, never scores.** It does not call a detection service, does

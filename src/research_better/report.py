@@ -211,6 +211,7 @@ def build(document: Document, store: ArtifactStore) -> Report:
             )
         return artifact.payload
 
+    paper = read("paper") or {}
     novelty = read("novelty") or {}
     grounding = read("grounding") or {}
     fluff = read("fluff") or []
@@ -220,6 +221,11 @@ def build(document: Document, store: ArtifactStore) -> Report:
 
     citations = grounding.get("citations") or {}
     claims = grounding.get("claims") or {}
+
+    if extraction := (paper.get("metadata") or {}).get("extraction_notes"):
+        # A format the tool had to guess its way through says so. Silence about
+        # a doubtful extraction reads as a confident one.
+        gaps.append(f"Reading this format was not exact. {extraction}")
 
     if not novelty.get("claim"):
         gaps.append(
