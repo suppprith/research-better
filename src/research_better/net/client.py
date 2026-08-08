@@ -199,13 +199,13 @@ class PoliteClient:
         last_reason = "unknown"
         for attempt in range(1, MAXIMUM_ATTEMPTS + 1):
             self.buckets.for_source(source).acquire()
+            response: httpx.Response | None = None
             with self._in_flight:
                 self.requests_made += 1
                 try:
                     response = self._client.get(url, params=params)
                 except httpx.HTTPError as error:
                     last_reason = f"{type(error).__name__}: {error}"
-                    response = None  # type: ignore[assignment]
 
             if response is not None:
                 if response.status_code not in RETRYABLE_STATUS:

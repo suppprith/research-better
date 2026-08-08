@@ -21,6 +21,7 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlencode, urlsplit
 
 SECONDS_PER_DAY = 86400
@@ -93,16 +94,17 @@ class CacheEntry:
         }
 
     @classmethod
-    def from_json(cls, key: str, raw: dict[str, object]) -> CacheEntry:
+    def from_json(cls, key: str, raw: dict[str, Any]) -> CacheEntry:
         body = str(raw.get("body", ""))
         decoded = (
             base64.b64decode(body) if raw.get("body_encoding") == "base64" else body.encode("utf-8")
         )
+        headers = raw.get("headers") or {}
         return cls(
             key=key,
             request=str(raw.get("request", "")),
             status=int(raw.get("status", 0)),
-            headers={str(k): str(v) for k, v in dict(raw.get("headers", {})).items()},
+            headers={str(k): str(v) for k, v in dict(headers).items()},
             body=decoded,
             stored_at=float(raw.get("stored_at", 0.0)),
             source=str(raw.get("source", "unknown")),

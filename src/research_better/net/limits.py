@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
+from typing import Any
 
 from research_better.errors import ResearchBetterError
 
@@ -68,7 +69,7 @@ def limits_path() -> Path:
     return Path(str(files("research_better").joinpath("references", DEFAULT_LIMITS)))
 
 
-def parse_limits(data: dict[str, object]) -> Limits:
+def parse_limits(data: dict[str, Any]) -> Limits:
     sources: dict[str, SourceLimit] = {}
     for name, section in data.items():
         if name in {"cache", "concurrency"} or not isinstance(section, dict):
