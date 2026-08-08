@@ -17,7 +17,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from research_better import edit as edit_layer
 from research_better import fluff, grounding, novelty, reviewer, voice
+from research_better.artifacts import ArtifactStore
 from research_better.findings import Finding, Severity, Suggestion
 from research_better.model import Document
 from research_better.net import PoliteClient
@@ -68,6 +70,14 @@ class Pass:
     phase: str
     run: Callable[[PassContext], PassResult] | None = None
     needs_network: bool = False
+    preflight: Callable[[PassContext, ArtifactStore], None] | None = None
+    """A precondition checked before the pass runs, and before the refusal a
+    pass that is not built yet would raise.
+
+    It exists for the evidence gate. A pass that writes to the paper has to
+    prove it read the analysis first, and that proof is a property of the run
+    rather than of the pass body, so it sits here where it cannot be skipped by
+    a future rewrite of the pass itself."""
 
 
 def _ingest(context: PassContext) -> PassResult:
@@ -196,6 +206,16 @@ def _originality(context: PassContext) -> PassResult:
     )
 
 
+def _require_evidence(context: PassContext, store: ArtifactStore) -> None:
+    """The evidence gate, checked before the edit pass is allowed to start.
+
+    Deliberately not inside the pass body. A gate a pass calls is a gate a
+    rewrite of that pass can forget, and this one is the reason the tool cannot
+    write before it has researched.
+    """
+    edit_layer.gather(store, context.document.source_hash)
+
+
 PASSES: dict[str, Pass] = {
     "ingest": Pass(
         name="ingest",
@@ -261,6 +281,7 @@ PASSES: dict[str, Pass] = {
         help="turn findings into a patch, applied only with --apply",
         implemented=False,
         phase="P5 surgical edit",
+        preflight=_require_evidence,
     ),
     "report": Pass(
         name="report",

@@ -108,16 +108,23 @@ def test_an_artifact_records_the_hash_of_the_draft_it_came_from(draft: Path) -> 
 def test_an_unbuilt_pass_refuses_rather_than_writing_an_empty_artifact(
     draft: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert main(["edit", str(draft), "--quiet"]) == EXIT_ERROR
+    assert main(["report", str(draft), "--quiet"]) == EXIT_ERROR
     message = capsys.readouterr().err
     assert "not built yet" in message
-    assert "P5" in message
-    # An empty edits.json looks exactly like an edit pass that found nothing to
-    # change, which is the false assurance this tool must not give.
-    assert not ArtifactStore(draft).path_for("edits").exists()
+    assert "P6" in message
+    # An empty report.json looks exactly like a run that found nothing to
+    # report, which is the false assurance this tool must not give.
+    assert not ArtifactStore(draft).path_for("report").exists()
 
 
-@pytest.mark.parametrize("name", sorted(n for n, p in PASSES.items() if not p.implemented))
+UNBUILT_WITHOUT_A_PRECONDITION = sorted(
+    name for name, entry in PASSES.items() if not entry.implemented and entry.preflight is None
+)
+"""A pass with a precondition reports the precondition instead, which is the
+more useful message. See test_edit_gate.py."""
+
+
+@pytest.mark.parametrize("name", UNBUILT_WITHOUT_A_PRECONDITION)
 def test_every_unbuilt_pass_names_the_phase_it_lands_in(
     name: str, draft: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

@@ -185,6 +185,13 @@ def _run_one(
     source_hash: str,
 ) -> tuple[int, dict[str, object]]:
     entry = PASSES[name]
+    # Before the not-built-yet refusal, so a pass with a precondition reports
+    # the precondition. Told "the edit pass is not built" when the real problem
+    # is a stale artifact, an author would wait for a release that would not
+    # have helped them.
+    if entry.preflight is not None:
+        entry.preflight(context, store)
+
     if not entry.implemented or entry.run is None:
         raise ResearchBetterError(
             f"the {name} pass is not built yet. It lands in {entry.phase}. "
