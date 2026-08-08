@@ -58,6 +58,39 @@ def built(analysed: Path) -> Report:
     return build(load(analysed), ArtifactStore(analysed))
 
 
+# Length ---------------------------------------------------------------------
+
+
+def test_a_ledger_of_cuts_makes_the_paper_shorter(built: Report, analysed: Path) -> None:
+    """The two numbers on the length line have to be the same measure.
+
+    They were not. The budget counts the whole source string, front matter and
+    reference list included, and the report subtracted that from a count of
+    prose, so the fixture came out nine words longer in the same breath as the
+    edit pass reporting a hundred and sixty one words cut.
+    """
+    ledger = ArtifactStore(analysed).read("edits")
+    assert ledger is not None
+    assert ledger.payload["words_delta"] < 0
+
+    assert built.words_after is not None
+    assert built.words_after < built.words_before
+    assert built.words_after - built.words_before == ledger.payload["words_delta"]
+
+
+def test_no_ledger_means_no_second_number(draft: Path) -> None:
+    main(["ingest", str(draft), "--quiet"])
+    report = build(load(draft), ArtifactStore(draft))
+    assert report.words_before > 0
+    assert report.words_after is None
+
+
+def test_the_page_carries_no_percentage(built: Report) -> None:
+    # Counts throughout. The same fact as a share invites being read as a grade
+    # for the paper, and a coverage line labelled as coverage did not stop that.
+    assert "%" not in to_markdown(built, CheckThresholds())
+
+
 # The page ------------------------------------------------------------------
 
 

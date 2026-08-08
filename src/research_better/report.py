@@ -280,7 +280,15 @@ def build(document: Document, store: ArtifactStore) -> Report:
         claim=novelty.get("claim"),
         claim_confirmed=bool(novelty.get("claim_confirmed")),
         words_before=document.word_count,
-        words_after=(edits.get("budget") or {}).get("edited_words"),
+        # The ledger's delta rather than the budget's edited_words. The budget
+        # counts the whole source string, front matter and reference list
+        # included, so subtracting it from a count of prose reported the
+        # fixture growing by nine words in the same breath as the edit pass
+        # saying it had cut a hundred and sixty one. Same unit on both sides,
+        # and every edit lands in prose.
+        words_after=(
+            document.word_count + int(edits["words_delta"]) if "words_delta" in edits else None
+        ),
         citations=_counts(citations.get("checks"), "verdict"),
         citations_with_full_text=(
             int(claims.get("sources_with_full_text", 0)),

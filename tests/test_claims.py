@@ -130,11 +130,17 @@ def test_a_source_with_no_full_text_is_uncheckable_not_unsupported(report: Claim
         assert check.support is not Support.UNSUPPORTED
 
 
-def test_coverage_is_reported_as_a_count_and_a_share(report: ClaimReport) -> None:
+def test_coverage_is_reported_as_a_count(report: ClaimReport) -> None:
     note = report.coverage_note()
     assert "of" in note and "retrievable full text" in note
-    assert "retrieval coverage" in note, "the percentage must be labelled as coverage"
     assert "Nothing here is a judgment of the paper" in note
+
+
+def test_coverage_carries_no_percentage(report: ClaimReport) -> None:
+    # A labelled share did not help. A reader scanning a report sees a figure
+    # attached to their paper and reads it as a mark, whatever the words around
+    # it say, and "1 of 6" carries the same fact without inviting that.
+    assert "%" not in report.coverage_note()
 
 
 def test_the_pass_makes_no_requests(bad_paper) -> None:

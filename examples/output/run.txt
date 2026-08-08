@@ -1,0 +1,38 @@
+$ rb ingest paper.md
+ingest               54 sentences, 701 words of prose, 9 citations used, 8 in the bibliography
+[exit 0]
+
+$ rb novelty --confirm-claim paper.md
+novelty              7 orphan paragraph(s), 7 unsupported part(s) of the claim
+[exit 1]
+
+$ rb voice paper.md
+voice                687 words profiled, 81 terms recorded, 2 section profile(s)
+[exit 0]
+
+$ rb ground --offline paper.md
+ground               3 of 8 entries resolved, 1 of 6 sources had full text
+[exit 1]
+
+$ rb originality --offline paper.md
+originality          2 overlap(s) against 4 source(s), 2 not retrievable
+[exit 1]
+
+$ rb fluff paper.md
+fluff                39 findings, 10 mechanical, 6 advisory
+[exit 1]
+
+$ rb trace paper.md
+trace                6 passage(s) flagged, 1 looked at and left alone
+[exit 1]
+
+$ rb ask paper.md
+ask                  1 blocking, 5 serious, 1 minor
+[exit 0]
+
+$ rb edit paper.md
+edit                 15 edit(s) proposed, -161 words, 3 not proposed
+[exit 1]
+
+$ rb report paper.md
+[exit 0]

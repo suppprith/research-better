@@ -336,17 +336,18 @@ class ClaimReport:
     def coverage_note(self) -> str:
         """How much of the bibliography could actually be inspected.
 
-        Stated as a count first and a percentage second, and labelled as
-        retrieval coverage rather than left bare. It says how much was looked
-        at, not how good the paper is.
+        A count, and no percentage beside it. The share was there once and
+        labelled retrieval coverage, which did not help: a reader scanning a
+        report sees a figure attached to their paper and reads it as a mark,
+        whatever the words around it say. "1 of 6" cannot be read that way and
+        carries the same fact.
         """
         if not self.sources_attempted:
             return "No cited work had a claim attached to it, so nothing was checked."
-        share = round(100 * self.sources_with_full_text / self.sources_attempted)
         return (
             f"{self.sources_with_full_text} of {self.sources_attempted} cited works had "
-            f"retrievable full text ({share}% retrieval coverage). The rest were checked "
-            f"against an abstract or not at all. Nothing here is a judgment of the paper."
+            f"retrievable full text. The rest were checked against an abstract or not at "
+            f"all. Nothing here is a judgment of the paper."
         )
 
     def to_json(self) -> dict[str, Any]:
