@@ -15,7 +15,7 @@ import pytest
 from research_better import __version__
 from research_better.artifacts import ArtifactStore
 from research_better.cli import EXIT_CLEAN, EXIT_ERROR, EXIT_FINDINGS, main
-from research_better.passes import PASSES, RUN_ORDER
+from research_better.passes import PASSES, RUN_ORDER, Pass
 
 CLEAN_PAPER = """\
 # Results
@@ -126,30 +126,25 @@ def test_an_artifact_records_the_hash_of_the_draft_it_came_from(draft: Path) -> 
 
 
 def test_an_unbuilt_pass_refuses_rather_than_writing_an_empty_artifact(
-    draft: Path, capsys: pytest.CaptureFixture[str]
+    draft: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    assert main(["report", str(draft), "--quiet"]) == EXIT_ERROR
+    """Every pass is built now, so the guarantee is tested against a pass that
+    is not. It has to survive: the next phase adds one, and an empty artifact
+    looks exactly like a check that found nothing wrong."""
+    unbuilt = Pass(
+        name="ingest",
+        artifact="paper",
+        help="pretend this is not written yet",
+        implemented=False,
+        phase="P9 something later",
+    )
+    monkeypatch.setitem(PASSES, "ingest", unbuilt)
+
+    assert main(["ingest", str(draft), "--quiet"]) == EXIT_ERROR
     message = capsys.readouterr().err
     assert "not built yet" in message
-    assert "P6" in message
-    # An empty report.json looks exactly like a run that found nothing to
-    # report, which is the false assurance this tool must not give.
-    assert not ArtifactStore(draft).path_for("report").exists()
-
-
-UNBUILT_WITHOUT_A_PRECONDITION = sorted(
-    name for name, entry in PASSES.items() if not entry.implemented and entry.preflight is None
-)
-"""A pass with a precondition reports the precondition instead, which is the
-more useful message. See test_edit_gate.py."""
-
-
-@pytest.mark.parametrize("name", UNBUILT_WITHOUT_A_PRECONDITION)
-def test_every_unbuilt_pass_names_the_phase_it_lands_in(
-    name: str, draft: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    assert main([name, str(draft), "--quiet"]) == EXIT_ERROR
-    assert PASSES[name].phase in capsys.readouterr().err
+    assert "P9 something later" in message
+    assert not ArtifactStore(draft).path_for("paper").exists()
 
 
 def test_run_says_which_passes_did_not_run(draft: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -279,7 +274,8 @@ def test_every_registered_pass_has_a_subcommand(capsys: pytest.CaptureFixture[st
 
 
 def test_edit_accepts_apply_and_report_accepts_check(draft: Path) -> None:
-    # Both refuse for now, but the surface has to be stable before the passes
-    # land behind it.
+    # `edit` still refuses on a draft with no evidence, which is the gate doing
+    # its job rather than the flag being unrecognised. `report` reads whatever
+    # is on disk and names what is not, so it runs.
     assert main(["edit", str(draft), "--apply", "--quiet"]) == EXIT_ERROR
-    assert main(["report", str(draft), "--check", "--quiet"]) == EXIT_ERROR
+    assert main(["report", str(draft), "--check", "--quiet"]) in {EXIT_CLEAN, EXIT_FINDINGS}

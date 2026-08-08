@@ -29,13 +29,14 @@ when it returns nothing.
 |---|---|---|
 | 1 | `rb ingest <draft>` | nothing |
 | 2 | `rb novelty <draft>` | `references/novelty-audit.md` |
-| 3 | **Confirm the claim with the user.** Stop here until they answer | |
+| 3 | **Confirm the claim with the user.** Stop here until they answer, then rerun step 2 with `--confirm-claim` | |
 | 4 | `rb voice <draft>` | nothing |
 | 5 | `rb ground <draft>` | `references/grounding-protocol.md` |
 | 6 | `rb originality <draft>` | `references/grounding-protocol.md` |
 | 7 | `rb fluff <draft>` | nothing, the lexicon is data the script reads |
 | 8 | `rb ask <draft>` | `references/reviewer-questions.md` |
 | 9 | `rb edit <draft>` | `references/voice-preservation.md` |
+| 10 | `rb report <draft>` | nothing |
 
 Read a reference only when its step runs. Loading all of them costs the context
 the paper needs.
@@ -45,6 +46,11 @@ the tool extracted; show that sentence to the user and wait. If the claim is
 wrong, every cut after it is wrong. If the pass reports that no claim could be
 found, tell the user exactly that and stop. A paper whose novelty cannot be
 read off its own opening has a problem that tightening the prose will not fix.
+
+Step 9 refuses until steps 2 and 4 to 7 have all run against the current draft
+and the claim is confirmed. That is the point of it: nothing gets written
+before the research is on disk. Step 10 reads whatever exists and names what
+does not, so it is worth running even after a partial pass.
 
 ## Reading the output
 

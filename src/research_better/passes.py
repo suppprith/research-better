@@ -19,6 +19,7 @@ from typing import Any
 
 from research_better import edit as edit_layer
 from research_better import fluff, grounding, novelty, reviewer, voice
+from research_better import report as reporting
 from research_better.artifacts import ArtifactStore
 from research_better.findings import Finding, Severity, Suggestion
 from research_better.model import Document
@@ -60,6 +61,12 @@ class PassContext:
     apply: bool = False
     force: bool = False
 
+    check: bool = False
+    """Turn the report into a verdict against the configured thresholds.
+    Reading a report should not fail a build; asking it to gate one should."""
+
+    html: bool = False
+
     def require_client(self, pass_name: str) -> PoliteClient:
         if self.client is None:
             raise RuntimeError(f"the {pass_name} pass needs an HTTP client and was given none")
@@ -89,6 +96,11 @@ class PassResult:
     """Set by a pass that reports something worth a non-zero exit without
     emitting `Finding` objects. The edit pass proposes changes rather than
     findings, and a proposed change is still something a CI check should see."""
+
+    stdout: str | None = None
+    """Printed after the summary line. Only the report sets it, because only
+    the report is meant to be read rather than filed: a page that lands in
+    `.research-better/` and is never opened is not a page an author reads."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,6 +311,42 @@ def _edit(context: PassContext) -> PassResult:
     )
 
 
+def _report(context: PassContext) -> PassResult:
+    store = context.require_store("report")
+    thresholds = reporting.CheckThresholds.load(store.draft)
+    built = reporting.build(context.document, store)
+    breaches = built.breaches(thresholds)
+
+    markdown = reporting.to_markdown(built, thresholds)
+    page = reporting.to_html(built, thresholds) if context.html else markdown
+    return PassResult(
+        payload={
+            "report": built.to_json(),
+            "check": {
+                "thresholds": {
+                    "max_unverified_citations": thresholds.max_unverified_citations,
+                    "max_unsupported_claims": thresholds.max_unsupported_claims,
+                    "max_blocking_questions": thresholds.max_blocking_questions,
+                    "source": thresholds.source,
+                },
+                "breaches": breaches,
+            },
+        },
+        summary=(
+            f"{built.unverified_citations} unverified citation(s), "
+            f"{built.unsupported_claims} unsupported claim(s), "
+            f"{built.blocking_questions} blocking question(s), "
+            f"{len(built.gaps)} thing(s) not checked"
+        ),
+        markdown=markdown,
+        attachments=((".html", reporting.to_html(built, thresholds)),),
+        # Only --check turns a report into a verdict. Reading one should not
+        # fail a build.
+        counts_as_finding=bool(breaches) and context.check,
+        stdout=page,
+    )
+
+
 def _require_evidence(context: PassContext, store: ArtifactStore) -> None:
     """The evidence gate, checked before the edit pass is allowed to start.
 
@@ -381,8 +429,9 @@ PASSES: dict[str, Pass] = {
         name="report",
         artifact="report",
         help="one page of what was found and what could not be checked",
-        implemented=False,
+        implemented=True,
         phase="P6 reporting and format coverage",
+        run=_report,
     ),
 }
 

@@ -188,7 +188,16 @@ def build_parser() -> argparse.ArgumentParser:
             sub.add_argument(
                 "--check",
                 action="store_true",
-                help="exit 1 when there are findings, for use in CI",
+                help=(
+                    "exit 1 when the paper is over a configured threshold, for use in "
+                    "CI or a pre-commit hook. Set them in .research-better.toml or "
+                    "under [tool.research-better.check] in pyproject.toml"
+                ),
+            )
+            sub.add_argument(
+                "--html",
+                action="store_true",
+                help="print the report as one self-contained page, for a coauthor",
             )
 
     run = commands.add_parser("run", parents=[parent], help="every implemented pass, in order")
@@ -208,6 +217,11 @@ def build_parser() -> argparse.ArgumentParser:
 def _emit(console: Console, name: str, result: PassResult, target: Path) -> None:
     console.say(f"{console.style.strong(name):<20} {result.summary}")
     console.detail(f"  wrote {target}")
+    if result.stdout:
+        # A page that lands in .research-better/ and is never opened is not a
+        # page an author reads.
+        console.say()
+        console.say(result.stdout)
 
 
 def _run_one(
@@ -315,6 +329,8 @@ def run(args: argparse.Namespace, console: Console) -> int:
             target_reduction=float(getattr(args, "target_reduction", 0.0) or 0.0),
             apply=bool(getattr(args, "apply", False)),
             force=bool(getattr(args, "force", False)),
+            check=bool(getattr(args, "check", False)),
+            html=bool(getattr(args, "html", False)),
         )
         for name in names:
             entry_pass = PASSES[name]
