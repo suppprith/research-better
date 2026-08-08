@@ -319,10 +319,17 @@ def resolve_overlaps(edits: Iterable[Edit]) -> tuple[tuple[Edit, ...], tuple[Dro
     return tuple(kept), tuple(dropped)
 
 
+Screen = Callable[["Edit"], tuple[str, str] | None]
+"""A per-row check returning (rule, note) to refuse a row, or nothing to admit
+it. The voice lock and the word budget arrive this way, so the ledger stays a
+record of proposals and does not grow an opinion about writing."""
+
+
 def build(
     document: Document,
     bundle: EvidenceBundle,
     rejected: frozenset[str] = frozenset(),
+    screen: Screen | None = None,
 ) -> Ledger:
     """Every change the evidence supports, minus the ones already turned down."""
     proposals = _fluff_edits(document, bundle) + _orphan_edits(document, bundle)
@@ -352,6 +359,12 @@ def build(
                     ),
                 )
             )
+            continue
+
+        refusal = screen(edit) if screen is not None else None
+        if refusal is not None:
+            rule, note = refusal
+            dropped.append(Dropped(edit=edit, rule=rule, note=note))
             continue
 
         admitted.append(edit)
@@ -451,9 +464,11 @@ def to_summary(ledger: Ledger) -> str:
         ]
 
     if ledger.dropped:
+        # Named rules, not a shrug. A constraint nobody can inspect is
+        # indistinguishable from a tool that felt like saying no.
         lines += [f"## Not proposed ({len(ledger.dropped)})", ""]
         for item in ledger.dropped:
-            lines.append(f"- `{item.edit.id}` {item.note}")
+            lines.append(f"- `{item.edit.id}` **{item.rule}** {item.note}")
         lines.append("")
 
     return "\n".join(lines)

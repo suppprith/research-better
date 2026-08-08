@@ -18,6 +18,7 @@ from research_better import __version__, fluff, grounding, novelty, reviewer, vo
 from research_better.artifacts import Artifact
 from research_better.edit import ledger
 from research_better.edit.gate import EvidenceBundle, evidence_ids
+from research_better.edit.voicelock import VoiceLock, screen
 from research_better.model import Document
 from research_better.net import HttpCache, PoliteClient
 from research_better.sources import ArxivAdapter, CrossrefAdapter, OpenAlexAdapter
@@ -114,7 +115,8 @@ def summarize_edits(document: Document) -> dict[str, object]:
         offline=True,
     )
 
-    built = ledger.build(document, bundle)
+    lock = VoiceLock.of(document, payloads["voice"])
+    built = ledger.build(document, bundle, screen=screen(lock))
     payload = built.to_json()
     for entry in payload["edits"]:
         entry.pop("char_range")

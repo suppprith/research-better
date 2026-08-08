@@ -303,7 +303,14 @@ def _hyphenation(surface: Counter[str]) -> tuple[tuple[str, str], ...]:
     return tuple(preferences)
 
 
-def _person(text: str) -> str:
+def person(text: str) -> str:
+    """Whether a passage speaks as "we", as "I", or impersonally.
+
+    Public because the voice lock measures it on a paragraph before and after a
+    proposed edit. Two ways of deciding what person a passage is written in
+    would eventually disagree, and the disagreement would let through exactly
+    the edit this is meant to catch.
+    """
     plural = len(FIRST_PERSON_PLURAL.findall(text))
     singular = len(FIRST_PERSON_SINGULAR.findall(text))
     if plural == 0 and singular == 0:
@@ -384,7 +391,7 @@ def _build_profile(
         hedges_per_hundred_words=round(100 * hedge_hits / len(words), 2) if words else 0.0,
         connectives=ranked,
         passive_ratio=_passive_ratio(sentences),
-        person=_person(text),
+        person=person(text),
         terminology=terminology,
         hyphenation=hyphenation,
         citations_per_paragraph=(

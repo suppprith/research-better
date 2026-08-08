@@ -154,6 +154,17 @@ def build_parser() -> argparse.ArgumentParser:
                     "a change you reject is not offered again"
                 ),
             )
+            sub.add_argument(
+                "--target-reduction",
+                type=float,
+                default=0.0,
+                metavar="SHARE",
+                help=(
+                    "how much shorter you want the paper, as a share, for example 0.1. "
+                    "Reported against, never filled: the tool will not invent a cut to "
+                    "hit a number"
+                ),
+            )
         if name == "novelty":
             sub.add_argument(
                 "--confirm-claim",
@@ -275,6 +286,7 @@ def run(args: argparse.Namespace, console: Console) -> int:
             claim_confirmed=bool(getattr(args, "confirm_claim", False)),
             store=store,
             interactive=bool(getattr(args, "interactive", False)),
+            target_reduction=float(getattr(args, "target_reduction", 0.0) or 0.0),
         )
         for name in names:
             entry_pass = PASSES[name]

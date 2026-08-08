@@ -39,6 +39,14 @@ from research_better.edit.ledger import (
     to_diff,
     to_summary,
 )
+from research_better.edit.voicelock import (
+    Budget,
+    VoiceLock,
+    WordBudgetError,
+    assemble,
+    screen,
+    within_budget,
+)
 
 NAME = "edit"
 
@@ -48,6 +56,7 @@ __all__ = [
     "REJECT",
     "REQUIRED",
     "SKIP",
+    "Budget",
     "Category",
     "Dropped",
     "Edit",
@@ -56,7 +65,10 @@ __all__ = [
     "Ledger",
     "MissingEvidenceError",
     "Requirement",
+    "VoiceLock",
+    "WordBudgetError",
     "apply_to",
+    "assemble",
     "build",
     "compatible",
     "evidence_ids",
@@ -66,6 +78,8 @@ __all__ = [
     "resolve_overlaps",
     "review",
     "save_decisions",
+    "screen",
     "to_diff",
     "to_summary",
+    "within_budget",
 ]

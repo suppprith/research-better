@@ -1,11 +1,41 @@
 {
   "counts": {
-    "CUT": 16,
+    "CUT": 15,
     "FIX": 0,
     "GROUND": 0,
-    "TIGHTEN": 1
+    "TIGHTEN": 0
   },
   "dropped": [
+    {
+      "edit": {
+        "category": "CUT",
+        "confidence": 0.9,
+        "evidence": "fluff:filler_openers@410-427",
+        "id": "e-332d4a74ab6a",
+        "original": "Needless to say,\npractitioners",
+        "proposed": "Practitioners",
+        "reason": "This opener announces that a sentence is coming instead of making a claim.",
+        "span_id": "s-3e0789ec9d39",
+        "words_delta": -3
+      },
+      "note": "Would leave a 6-word sentence, further outside the 12 to 27 word band this author writes in for this section.",
+      "rule": "voice_sentence_length"
+    },
+    {
+      "edit": {
+        "category": "TIGHTEN",
+        "confidence": 0.8,
+        "evidence": "fluff:nominalizations@708-732",
+        "id": "e-651f1ab66904",
+        "original": "performed an analysis of",
+        "proposed": "analysed",
+        "reason": "The verb is buried in a noun.",
+        "span_id": "s-e6b9cb8592b9",
+        "words_delta": -3
+      },
+      "note": "Would introduce 'analysed', which appears nowhere in the draft and in no source it cites. A synonym the author never used is the loudest tell of a machine edit.",
+      "rule": "voice_new_content_word"
+    },
     {
       "edit": {
         "category": "CUT",
@@ -59,17 +89,6 @@
     {
       "category": "CUT",
       "confidence": 0.9,
-      "evidence": "fluff:filler_openers@410-427",
-      "id": "e-332d4a74ab6a",
-      "original": "Needless to say,\npractitioners",
-      "proposed": "Practitioners",
-      "reason": "This opener announces that a sentence is coming instead of making a claim.",
-      "span_id": "s-3e0789ec9d39",
-      "words_delta": -3
-    },
-    {
-      "category": "CUT",
-      "confidence": 0.9,
       "evidence": "fluff:hedge_adverbs@496-508",
       "id": "e-63f08e8011fa",
       "original": "potentially ",
@@ -110,17 +129,6 @@
       "reason": "This opener announces that a sentence is coming instead of making a claim.",
       "span_id": "s-e6b9cb8592b9",
       "words_delta": -5
-    },
-    {
-      "category": "TIGHTEN",
-      "confidence": 0.8,
-      "evidence": "fluff:nominalizations@708-732",
-      "id": "e-651f1ab66904",
-      "original": "performed an analysis of",
-      "proposed": "analysed",
-      "reason": "The verb is buried in a noun.",
-      "span_id": "s-e6b9cb8592b9",
-      "words_delta": -3
     },
     {
       "category": "CUT",
@@ -211,5 +219,5 @@
       "words_delta": -29
     }
   ],
-  "words_delta": -167
+  "words_delta": -161
 }

@@ -52,6 +52,11 @@ class PassContext:
 
     interactive: bool = False
 
+    target_reduction: float = 0.0
+    """How much shorter the author wants the paper. A target the run reports
+    against, never a quota it fills: the ceiling on growing the paper is
+    enforced, and falling short of a reduction is a fact about the draft."""
+
     def require_client(self, pass_name: str) -> PoliteClient:
         if self.client is None:
             raise RuntimeError(f"the {pass_name} pass needs an HTTP client and was given none")
@@ -230,25 +235,43 @@ def _originality(context: PassContext) -> PassResult:
 
 def _edit(context: PassContext) -> PassResult:
     store = context.require_store("edit")
-    bundle = edit_layer.gather(store, context.document.source_hash)
+    document = context.document
+    bundle = edit_layer.gather(store, document.source_hash)
+
+    # The lock is built from the voice artifact as it was written, for the same
+    # reason the gate reads payloads: the constraint has to be the one recorded,
+    # not the one the tool would compute if asked again.
+    lock = edit_layer.VoiceLock.of(document, bundle.payload("voice"))
+    screen = edit_layer.screen(lock)
+    budget = edit_layer.Budget.of(document, context.target_reduction)
+
     decisions = edit_layer.load_decisions(store)
-    ledger = edit_layer.build(context.document, bundle, edit_layer.rejected_ids(decisions))
+    ledger = edit_layer.build(document, bundle, edit_layer.rejected_ids(decisions), screen)
 
     if context.interactive:
         decisions = edit_layer.review(ledger, input, print, decisions)
-        edit_layer.save_decisions(store, decisions, context.document.source_hash)
+        edit_layer.save_decisions(store, decisions, document.source_hash)
         # Rebuilt rather than filtered, so a row rejected in this session leaves
         # the ledger the same way one rejected last week does.
-        ledger = edit_layer.build(context.document, bundle, edit_layer.rejected_ids(decisions))
+        ledger = edit_layer.build(document, bundle, edit_layer.rejected_ids(decisions), screen)
 
-    patch = edit_layer.to_diff(context.document, ledger.edits)
+    words = budget.check(edit_layer.apply_to(document.source_text, list(ledger.edits)))
+    patch = edit_layer.to_diff(document, ledger.edits)
+
+    payload = ledger.to_json()
+    payload["budget"] = {
+        "original_words": budget.original_words,
+        "edited_words": words,
+        "target_reduction": budget.target_reduction,
+        "note": budget.shortfall(words),
+    }
     return PassResult(
-        payload=ledger.to_json(),
+        payload=payload,
         summary=(
             f"{len(ledger.edits)} edit(s) proposed, {ledger.words_delta:+d} words, "
             f"{len(ledger.dropped)} not proposed"
         ),
-        markdown=edit_layer.to_summary(ledger),
+        markdown=edit_layer.to_summary(ledger) + f"\n{budget.shortfall(words)}\n",
         attachments=((".diff", patch),) if patch else (),
         counts_as_finding=bool(ledger.edits),
     )
