@@ -67,14 +67,3 @@
  
  Recall at ten rises from 0.62 to 0.71 when expansion is enabled, a gain of nine
  points. The cost is one third that of the dense baseline on the same hardware,
-@@ -89,9 +81,7 @@
- the difference fell inside the bootstrap interval. Expansion helps short
- queries.
- 
--Peer review has been studied for many years. Reviewers disagree with each other
--more often than authors expect. Calibration across a program committee is
--difficult to achieve in practice.
-+
- 
- # Limitations
- 

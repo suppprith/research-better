@@ -123,7 +123,7 @@ $ rb ask paper.md
 ask                  1 blocking, 5 serious, 1 minor
 
 $ rb edit paper.md
-edit                 15 edit(s) proposed, -161 words, 3 not proposed
+edit                 14 edit(s) proposed, -132 words, 4 not proposed
 ```
 
 Every summary says what was checked rather than how clean the paper is. "3 of 8

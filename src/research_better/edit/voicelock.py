@@ -24,6 +24,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from research_better.edit import scope
 from research_better.edit.ledger import Category, Edit, apply_to
 from research_better.errors import ResearchBetterError
 from research_better.model import Document, Paragraph, Sentence
@@ -365,13 +366,25 @@ def within_budget(edit: Edit) -> bool:
 
 
 def screen(lock: VoiceLock) -> Callable[[Edit], Rejection | None]:
-    """The per-row check the ledger runs: budget first, then the voice rules.
+    """The per-row check the ledger runs: scope, then budget, then the voice rules.
 
-    Budget first because it is arithmetic and the voice rules are judgement. A
-    row that makes the paper longer is out whatever else is true of it.
+    Scope first because it is the only one asking what is being cut rather than
+    what the cut would read like. The voice rules have nothing to say about a
+    deletion, since a deletion puts no new words on the page, so a run without
+    the scope check in front of them had no opinion at all on deleting a
+    Results paragraph.
+
+    Budget before voice because it is arithmetic and the voice rules are
+    judgement. A row that makes the paper longer is out whatever else is true
+    of it.
     """
 
     def check(edit: Edit) -> Rejection | None:
+        # The lock already carries the document, so this is not a check a
+        # caller can forget to switch on.
+        refusal = scope.check(lock.document, edit)
+        if refusal is not None:
+            return refusal
         if not within_budget(edit):
             return (
                 "word_budget",

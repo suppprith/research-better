@@ -3,7 +3,7 @@
 Nothing here has been applied. Every row names the finding behind it, and
 a row you reject is not proposed again.
 
-## Cuts (15, -161 words)
+## Cuts (14, -132 words)
 
 - `e-9bc6efaa3b92` This opener announces that a sentence is coming instead of making a claim.
   - remove: It is important to note that information
@@ -50,14 +50,12 @@ a row you reject is not proposed again.
 - `e-be83360a54ae` This adverb claims a magnitude with no number and no citation behind it.
   - remove: substantially
   - evidence: `fluff:unsupported_superlative_adverbs@3689-3703`
-- `e-2d0d9be7d038` No sentence in this paragraph serves any part of the contribution claim.
-  - remove: Peer review has been studied for many years. Reviewers disagree with each other more often than authors expect. Calib...
-  - evidence: `novelty:orphan:s-c70f85285ffb`
 
-## Not proposed (3)
+## Not proposed (4)
 
 - `e-332d4a74ab6a` **voice_sentence_length** Would leave a 6-word sentence, further outside the 12 to 27 word band this author writes in for this section.
 - `e-651f1ab66904` **voice_new_content_word** Would introduce 'analysed', which appears nowhere in the draft and in no source it cites. A synonym the author never used is the loudest tell of a machine edit.
+- `e-2d0d9be7d038` **cut_in_a_findings_section** Deletes a whole paragraph from 'Results'. A findings paragraph serves the claim by reporting what happened rather than by repeating its words, which is the relation this classifier cannot see.
 - `e-bd35769cfcc2` **overlapping_edit** Overlaps e-9bc6efaa3b92 (CUT, confidence 0.90), which was kept. Applying both would produce text neither one proposed.
 
-871 words to 710, -161.
+871 words to 739, -132.

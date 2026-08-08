@@ -1,6 +1,6 @@
 {
   "counts": {
-    "CUT": 15,
+    "CUT": 14,
     "FIX": 0,
     "GROUND": 0,
     "TIGHTEN": 0
@@ -35,6 +35,21 @@
       },
       "note": "Would introduce 'analysed', which appears nowhere in the draft and in no source it cites. A synonym the author never used is the loudest tell of a machine edit.",
       "rule": "voice_new_content_word"
+    },
+    {
+      "edit": {
+        "category": "CUT",
+        "confidence": 0.3,
+        "evidence": "novelty:orphan:s-c70f85285ffb",
+        "id": "e-2d0d9be7d038",
+        "original": "Peer review has been studied for many years. Reviewers disagree with each other\nmore often than authors expect. Calibration across a program committee is\ndifficult to achieve in practice.",
+        "proposed": "",
+        "reason": "No sentence in this paragraph serves any part of the contribution claim.",
+        "span_id": "s-c70f85285ffb",
+        "words_delta": -29
+      },
+      "note": "Deletes a whole paragraph from 'Results'. A findings paragraph serves the claim by reporting what happened rather than by repeating its words, which is the relation this classifier cannot see.",
+      "rule": "cut_in_a_findings_section"
     },
     {
       "edit": {
@@ -206,18 +221,7 @@
       "reason": "This adverb claims a magnitude with no number and no citation behind it.",
       "span_id": "s-52c74f7fdc9e",
       "words_delta": -1
-    },
-    {
-      "category": "CUT",
-      "confidence": 0.3,
-      "evidence": "novelty:orphan:s-c70f85285ffb",
-      "id": "e-2d0d9be7d038",
-      "original": "Peer review has been studied for many years. Reviewers disagree with each other\nmore often than authors expect. Calibration across a program committee is\ndifficult to achieve in practice.",
-      "proposed": "",
-      "reason": "No sentence in this paragraph serves any part of the contribution claim.",
-      "span_id": "s-c70f85285ffb",
-      "words_delta": -29
     }
   ],
-  "words_delta": -161
+  "words_delta": -132
 }

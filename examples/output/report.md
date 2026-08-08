@@ -2,13 +2,13 @@
 
 **The paper claims:** Our primary contribution is a formal proof that adaptive retrieval converges under bounded query drift.
 
-**Length.** 701 words of prose to 540, -161.
+**Length.** 701 words of prose to 569, -132.
 
 **Citations.** 8 entries: 3 not found, 1 retracted, 1 title mismatch, 3 verified. 1 of 6 cited works had retrievable full text.
 
 **Claims.** 9 cited claims: 1 partial, 2 supported, 6 uncheckable.
 
-**Cuts.** 10 mechanical fluff, 7 orphan paragraphs, 15 proposed. 3 refused or displaced.
+**Cuts.** 10 mechanical fluff, 7 orphan paragraphs, 14 proposed. 4 refused or displaced.
 
 **Reviewer questions.** 1 blocking, 1 minor, 5 serious.
 
