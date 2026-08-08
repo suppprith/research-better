@@ -49,18 +49,28 @@ class Finding:
     suggestion: Suggestion
     replacement: str | None = None
     note: str | None = None
+    advisory: bool = False
+    """The finding rests on a correlation rather than a rule.
+
+    Uniform sentence length correlates with generated text. It does not prove
+    it, and some careful human writers are naturally uniform. An advisory
+    finding is worth showing to an author and is never worth acting on for
+    them, so it can never be auto-applied whatever its severity.
+    """
 
     @property
     def auto_actionable(self) -> bool:
         """Whether the edit pass may apply this without asking.
 
-        Both conditions are load bearing. A high-severity finding whose fix
-        needs a word choice is still not something to apply silently.
+        All three conditions are load bearing. A high-severity finding whose
+        fix needs a word choice is still not something to apply silently, and
+        an advisory finding never is regardless of severity.
         """
-        return self.severity is Severity.HIGH and self.suggestion in {
-            Suggestion.DELETE,
-            Suggestion.DELETE_CLAUSE,
-        }
+        return (
+            not self.advisory
+            and self.severity is Severity.HIGH
+            and self.suggestion in {Suggestion.DELETE, Suggestion.DELETE_CLAUSE}
+        )
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -72,6 +82,7 @@ class Finding:
             "suggestion": str(self.suggestion),
             "replacement": self.replacement,
             "note": self.note,
+            "advisory": self.advisory,
         }
 
 

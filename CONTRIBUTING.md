@@ -76,6 +76,23 @@ pass. A tool that flags everything is useless, so that paragraph is what proves
 the passes discriminate rather than fire. If a change makes it produce a
 finding, the change is wrong, however much it improved elsewhere.
 
+### Thresholds
+
+A number in `references/rhythm-thresholds.toml` has to be traceable to one of
+two things, and the `source` field says which:
+
+* A corpus statistic, produced by `scripts/calibrate_rhythm.py` over accepted
+  open-access papers. The source records the percentile, the corpus, and the
+  date.
+* A structural definition. "Two or more is a repetition" is a definition.
+  "Below 4.2 words of standard deviation is machine-like" is a claim about how
+  humans write, and needs a corpus.
+
+A rule with neither ships disabled, and the loader refuses to enable a rule
+with an empty source. This is not bureaucracy. A threshold picked because it
+looked about right flags whatever its author happened to dislike, and nobody
+can argue with it.
+
 ### Network tests
 
 Tests that hit a live external API are marked `@pytest.mark.network` and are

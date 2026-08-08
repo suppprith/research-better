@@ -69,6 +69,9 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 # a hyphen, so the pattern has to accept both. RUF001 reads the en dash as a
 # typo for a hyphen, which is exactly the case being matched.
 "src/research_better/ingest/citations.py" = ["RUF001"]
+# SIM905 would turn the readable stopword block into one 700-character list
+# literal. The split form is the maintainable one here.
+"src/research_better/fluff/structural.py" = ["SIM905"]
 
 [tool.mypy]
 python_version = "3.11"

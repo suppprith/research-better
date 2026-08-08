@@ -1,5 +1,6 @@
 [
   {
+    "advisory": false,
     "char_range": [
       110,
       139
@@ -13,6 +14,7 @@
     "suggestion": "delete_clause"
   },
   {
+    "advisory": false,
     "char_range": [
       174,
       180
@@ -26,6 +28,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       180,
       187
@@ -39,6 +42,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       201,
       239
@@ -52,6 +56,7 @@
     "suggestion": "delete_clause"
   },
   {
+    "advisory": false,
     "char_range": [
       230,
       239
@@ -65,6 +70,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       241,
       257
@@ -78,6 +84,7 @@
     "suggestion": "delete_clause"
   },
   {
+    "advisory": false,
     "char_range": [
       261,
       266
@@ -91,6 +98,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       346,
       355
@@ -104,6 +112,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       363,
       372
@@ -117,6 +126,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       373,
       381
@@ -130,6 +140,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       410,
       427
@@ -143,6 +154,7 @@
     "suggestion": "delete_clause"
   },
   {
+    "advisory": false,
     "char_range": [
       446,
       453
@@ -156,6 +168,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       496,
       508
@@ -169,6 +182,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       508,
       515
@@ -182,6 +196,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       540,
       545
@@ -195,6 +210,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       546,
       555
@@ -208,6 +224,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       555,
       563
@@ -221,6 +238,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       609,
       618
@@ -234,6 +252,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       660,
       688
@@ -247,6 +266,7 @@
     "suggestion": "delete_clause"
   },
   {
+    "advisory": false,
     "char_range": [
       708,
       732
@@ -260,6 +280,7 @@
     "suggestion": "replace_with"
   },
   {
+    "advisory": false,
     "char_range": [
       767,
       777
@@ -273,6 +294,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       782,
       789
@@ -286,6 +308,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       936,
       944
@@ -299,6 +322,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       960,
       969
@@ -312,6 +336,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       995,
       1011
@@ -325,6 +350,7 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
       1191,
       1204
@@ -338,6 +364,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       1395,
       1405
@@ -351,6 +378,7 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
       1536,
       1550
@@ -364,9 +392,80 @@
     "suggestion": "delete"
   },
   {
+    "advisory": true,
     "char_range": [
-      2649,
-      2663
+      2255,
+      2286
+    ],
+    "matched_text": "efficient, scalable, and robust",
+    "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
+    "replacement": null,
+    "rule": "tricolon",
+    "severity": "low",
+    "span_id": "s-10d2d80a957f",
+    "suggestion": "review"
+  },
+  {
+    "advisory": true,
+    "char_range": [
+      2288,
+      2296
+    ],
+    "matched_text": "Not only",
+    "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
+    "replacement": null,
+    "rule": "balanced_clause",
+    "severity": "low",
+    "span_id": "s-2015f189d62c",
+    "suggestion": "review"
+  },
+  {
+    "advisory": true,
+    "char_range": [
+      2364,
+      2389
+    ],
+    "matched_text": "simple, fast, and\ngeneral",
+    "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
+    "replacement": null,
+    "rule": "tricolon",
+    "severity": "low",
+    "span_id": "s-20622b2d5ba1",
+    "suggestion": "review"
+  },
+  {
+    "advisory": true,
+    "char_range": [
+      2397,
+      2405
+    ],
+    "matched_text": "not only",
+    "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
+    "replacement": null,
+    "rule": "balanced_clause",
+    "severity": "low",
+    "span_id": "s-13bc602fb222",
+    "suggestion": "review"
+  },
+  {
+    "advisory": true,
+    "char_range": [
+      2448,
+      2474
+    ],
+    "matched_text": "As will be\ndiscussed later",
+    "note": "This promises a discussion later in the paper and names no target, so no reader and no reviewer can check the promise was kept. Point at a section, or drop the sentence.",
+    "replacement": null,
+    "rule": "empty_forward_reference",
+    "severity": "low",
+    "span_id": "s-fa87d5be76f4",
+    "suggestion": "review"
+  },
+  {
+    "advisory": false,
+    "char_range": [
+      2747,
+      2761
     ],
     "matched_text": "significantly",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -377,9 +476,10 @@
     "suggestion": "delete"
   },
   {
+    "advisory": false,
     "char_range": [
-      2663,
-      2678
+      2761,
+      2776
     ],
     "matched_text": "outperforms all",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -390,9 +490,10 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
-      2709,
-      2717
+      2807,
+      2815
     ],
     "matched_text": "the best",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -403,9 +504,10 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
-      2754,
-      2759
+      2852,
+      2857
     ],
     "matched_text": "novel",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -416,9 +518,10 @@
     "suggestion": "review"
   },
   {
+    "advisory": false,
     "char_range": [
-      2773,
-      2787
+      2871,
+      2885
     ],
     "matched_text": "substantially",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -429,16 +532,17 @@
     "suggestion": "delete"
   },
   {
+    "advisory": true,
     "char_range": [
-      3503,
-      3510
+      3653,
+      3710
     ],
-    "matched_text": "pivotal",
-    "note": "This word appears far more often in generated text than in accepted papers. That is not proof of anything, and some of these words are correct in context, so this is raised for a human rather than acted on.",
+    "matched_text": "A unified\nframework for adaptive retrieval was presented.",
+    "note": "This sentence introduces no word the section's opening sentence did not already carry. It restates rather than concludes, so cutting it loses nothing.",
     "replacement": null,
-    "rule": "model_vocabulary",
-    "severity": "low",
-    "span_id": "s-50e870a9824c",
+    "rule": "section_closing_restatement",
+    "severity": "medium",
+    "span_id": "s-9dcfc4abe86d",
     "suggestion": "review"
   }
 ]

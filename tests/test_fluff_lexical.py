@@ -313,9 +313,9 @@ def test_a_lexicon_with_no_sections_is_an_error() -> None:
 
 def test_the_shipped_lexicon_covers_every_matcher() -> None:
     from research_better.fluff.lexical import MATCHERS
+    from research_better.fluff.structural import LEXICON_FAMILIES
 
-    families = set(load_lexicon().families)
-    assert families == set(MATCHERS), (
+    assert set(load_lexicon().families) == set(MATCHERS) | set(LEXICON_FAMILIES), (
         "a matcher with no lexicon section can never fire, and a lexicon "
         "section with no matcher is silently ignored"
     )

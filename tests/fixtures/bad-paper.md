@@ -50,8 +50,10 @@ weights. The parameters were selected using a grid search over the development
 set. The final configuration was applied without further modification.
 
 Moreover, our approach is efficient, scalable, and robust. Not only does it
-reduce latency, but it also improves recall. As will be discussed later, the
-theoretical properties of this design are worth examining in detail.
+reduce latency, but it also improves recall. The design is simple, fast, and
+general. It is not only cheaper to run but also easier to deploy. As will be
+discussed later, the theoretical properties of this design are worth examining
+in detail.
 
 Databases have existed since the 1960s. Relational algebra provides a formal
 foundation for query languages. Many systems in production today still rely on
@@ -76,9 +78,9 @@ difficult to achieve in practice.
 
 # Conclusion
 
-We presented a unified framework for adaptive retrieval. Information retrieval
-has become a pivotal area of study, and our unified framework for adaptive
-retrieval addresses it.
+We presented a unified framework for adaptive retrieval. The method indexes the
+corpus with BM25 and expands queries from a first-pass ranking. A unified
+framework for adaptive retrieval was presented.
 
 # References
 

@@ -223,6 +223,38 @@ note: A reviewer will ask what this is measured against. Either cite the compari
 - superior to all
 - outperforms all
 
+## balanced_clause_templates
+
+family: balanced_clause
+severity: low
+suggestion: review
+note: A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.
+
+- not only
+- on the one hand
+- on the other hand
+- it is not merely
+- rather than simply
+- both a
+- at once a
+
+## forward_reference_phrases
+
+family: empty_forward_reference
+severity: low
+suggestion: review
+note: This promises a discussion later in the paper and names no target, so no reader and no reviewer can check the promise was kept. Point at a section, or drop the sentence.
+
+- as will be discussed later
+- as will be shown later
+- as we will see
+- as we shall see
+- we will show later
+- later in this paper
+- as discussed below
+- in what follows
+- more on this later
+
 ## throat_clearing_transitions
 
 family: throat_clearing

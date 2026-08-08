@@ -243,9 +243,19 @@
       "text": "Not only does it\nreduce latency, but it also improves recall."
     },
     {
+      "id": "s-20622b2d5ba1",
+      "section": "sec-327cd534431f",
+      "text": "The design is simple, fast, and\ngeneral."
+    },
+    {
+      "id": "s-13bc602fb222",
+      "section": "sec-327cd534431f",
+      "text": "It is not only cheaper to run but also easier to deploy."
+    },
+    {
       "id": "s-fa87d5be76f4",
       "section": "sec-327cd534431f",
-      "text": "As will be discussed later, the\ntheoretical properties of this design are worth examining in detail."
+      "text": "As will be\ndiscussed later, the theoretical properties of this design are worth examining\nin detail."
     },
     {
       "id": "s-ab3494b1c005",
@@ -313,9 +323,14 @@
       "text": "We presented a unified framework for adaptive retrieval."
     },
     {
-      "id": "s-50e870a9824c",
+      "id": "s-297f9244b198",
       "section": "sec-d88ee00f75db",
-      "text": "Information retrieval\nhas become a pivotal area of study, and our unified framework for adaptive\nretrieval addresses it."
+      "text": "The method indexes the\ncorpus with BM25 and expands queries from a first-pass ranking."
+    },
+    {
+      "id": "s-9dcfc4abe86d",
+      "section": "sec-d88ee00f75db",
+      "text": "A unified\nframework for adaptive retrieval was presented."
     }
   ]
 }

@@ -20,10 +20,10 @@ The paper is not subtle. It is a test instrument, not a writing sample.
 | Citation-free superlative | Results paragraph 1 ("significantly outperforms", "best results reported to date", "novel", "substantially") with no test statistic and no citation |
 | Throat-clearing transition run | Related Work paragraphs 2, 3, and 4, consecutive, opening with Furthermore, Moreover, Additionally. Method paragraph 2 and Results paragraph 1 also open this way but stand alone, and a lone transition is not a defect |
 | Uniform sentence rhythm | Method paragraph 1, five sentences between 11 and 13 words |
-| Tricolon | Method paragraph 2 ("efficient, scalable, and robust") |
-| Balanced-clause template | Method paragraph 2 ("Not only does it reduce latency, but it also improves recall") |
-| Empty forward reference | Method paragraph 2 ("As will be discussed later") with no later discussion |
-| Section-closing restatement | Conclusion restates the Introduction's opening claim with no new content |
+| Tricolon | Method paragraph 2, twice ("efficient, scalable, and robust" and "simple, fast, and general"). One tricolon is a sentence somebody wrote, so the rule needs the repetition |
+| Balanced-clause template | Method paragraph 2, twice ("Not only does it reduce latency, but it also improves recall" and "not only cheaper to run but also easier to deploy") |
+| Empty forward reference | Method paragraph 2 ("As will be discussed later") naming no target |
+| Section-closing restatement | Conclusion's last sentence introduces no content word its first sentence did not already carry |
 | Orphan paragraphs | Related Work paragraph 5 (search engines), Method paragraph 3 (databases), Results paragraph 3 (peer review). None supports any claim in the paper |
 
 ### Citations

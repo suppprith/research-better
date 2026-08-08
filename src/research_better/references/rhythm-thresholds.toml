@@ -1,0 +1,60 @@
+# Thresholds for the structural fluff rules.
+#
+# Every threshold in this file must be traceable to something. A rule whose
+# number was picked because it looked about right is a rule that flags whatever
+# the author of the rule happened to dislike, and there is no way to argue with
+# it. So each section carries a `source` field, and the honest values for that
+# field are only two kinds:
+#
+#   1. A corpus statistic. Run scripts/calibrate_rhythm.py over a set of
+#      accepted open-access papers. It writes the percentile it used, the number
+#      of papers, and the date, into the section it calibrated.
+#   2. A structural definition. Not a claim about how humans write, just a
+#      definition of the thing being counted. "Two or more is a repetition" is
+#      a definition. "Below 4.2 words of standard deviation is machine-like" is
+#      a claim, and needs a corpus.
+#
+# A rule with neither ships disabled. That is why the two distributional rules
+# below are off: no corpus has been run yet.
+#
+# Every structural finding is advisory whatever its source. Low sentence-length
+# variance correlates with generated text and does not prove it, and some
+# careful human writers are naturally uniform. Advisory findings are never
+# auto-applied.
+
+[sentence_length_variance]
+enabled = false
+source = "not calibrated: no corpus has been run"
+# Filled by scripts/calibrate_rhythm.py. Paragraphs whose standard deviation of
+# sentence length falls below this many words are flagged.
+min_stdev_words = 0.0
+# Paragraphs shorter than this are skipped. Three sentences do not have a
+# rhythm to speak of.
+minimum_sentences = 4
+
+[paragraph_shape_uniformity]
+enabled = false
+source = "not calibrated: no corpus has been run"
+# A run of this many consecutive paragraphs whose sentence counts differ by no
+# more than `tolerance` is flagged.
+minimum_run = 0
+tolerance = 1
+
+[tricolon]
+enabled = true
+source = "structural definition: two or more three-item lists in one section is a repetition by definition, not a corpus statistic"
+minimum_repeats = 2
+
+[balanced_clause]
+enabled = true
+source = "structural definition: two or more uses of the same balanced template in one section is a repetition by definition"
+minimum_repeats = 2
+
+[section_closing_restatement]
+enabled = true
+source = "structural definition: the closing sentence introduces no content word the opening sentence did not already carry, so it adds nothing. No similarity threshold is involved"
+minimum_content_words = 3
+
+[empty_forward_reference]
+enabled = true
+source = "structural definition: the sentence promises a later discussion and names no target, so nobody can check the promise was kept"
