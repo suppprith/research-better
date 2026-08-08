@@ -57,14 +57,16 @@ check, not so the tool can reproduce the source."""
 # Words that raise a claim above what a passage merely on the same topic
 # supports. A source can be about hierarchical indexing without establishing
 # that it works at billion-document scale.
-UNIVERSALS = frozenset(
+# Annotated rather than inferred because another module imports them, and an
+# import cycle leaves the checker unable to infer a name it has not reached yet.
+UNIVERSALS: frozenset[str] = frozenset(
     """
     all every any always never none no entirely fully completely universally
     invariably guaranteed proves proof optimal exact
     """.split()
 )
 
-SUPERLATIVES = frozenset(
+SUPERLATIVES: frozenset[str] = frozenset(
     """
     best first only novel unprecedented state-of-the-art fastest highest lowest
     largest smallest strongest outperforms significantly substantially

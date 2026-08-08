@@ -91,10 +91,15 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 no_implicit_optional = true
 
-# Strict for the core model. Every later pass addresses text through it, so a
-# type error here propagates into every artifact the tool emits.
+# Strict for the core model, and for the public API. Every later pass addresses
+# text through the model, so a type error there propagates into every artifact
+# the tool emits. The API is what other people's code is typed against, and a
+# published surface is the one place a loose annotation cannot be corrected
+# quietly later.
 [[tool.mypy.overrides]]
 module = [
+    "research_better",
+    "research_better.api",
     "research_better.builder",
     "research_better.model",
     "research_better.segmentation",
