@@ -1,0 +1,65 @@
+% A real IEEEtran front matter block, which is the thing 825 passing tests
+% never saw. The other LaTeX fixtures declare \title and \author in the
+% preamble, where the adapter was already reading them. IEEEtran declares them
+% after \begin{document}, so every affiliation line arrived at the analysis as
+% ordinary prose, became a paragraph no body sentence supported, and was
+% offered for deletion.
+%
+% Nothing between \begin{document} and \section{Introduction} may produce a
+% sentence, a paragraph, or an orphan. The abstract is the exception and must
+% still be segmented, because it is where the contribution claim is found.
+\documentclass[conference]{IEEEtran}
+\usepackage{orcidlink}
+
+\begin{document}
+
+\title{Anchor Placement Under a Fixed Budget\\
+{\footnotesize \textsuperscript{*}Note: this note is not a claim about anything.}
+\thanks{This work was supported by nobody in particular.}}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} A. Researcher \orcidlink{0000-0002-1825-0097}}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Some University}\\
+Bengaluru, India \\
+a.researcher@example.edu}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} B. Coauthor}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Some University}\\
+Bengaluru, India \\
+b.coauthor@example.edu}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} C. Advisor}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Some University}\\
+Bengaluru, India \\
+c.advisor@example.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+Anchor placement is usually evaluated with the budget left free. We present a
+comparison that holds the budget fixed, and we report coverage at every
+placement count we measured.
+\end{abstract}
+
+\begin{IEEEkeywords}
+anchor placement, fixed budget, coverage, indoor localization
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:intro}
+
+Geometric placement is reported to beat greedy placement on this benchmark.
+We measured both at a fixed budget and the ordering reverses.
+
+\section{Results}
+\label{sec:results}
+
+Geometric placement fails outright once the budget is held fixed. Coverage
+falls from 0.81 to 0.54 across the four floors we measured, and the greedy
+placement holds at 0.79 on the same floors. We ran each configuration five
+times.
+
+\end{document}

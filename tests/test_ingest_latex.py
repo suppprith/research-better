@@ -287,3 +287,182 @@ def test_an_unclosed_environment_fails_loudly(tmp_path: Path) -> None:
     root.write_text("\\begin{document}\n\\begin{table}\nrows\n", encoding="utf-8")
     with pytest.raises(IngestError, match="never closed"):
         ingest(root)
+
+
+# Front matter -------------------------------------------------------------
+#
+# The whole of this block exists because 825 passing tests did not see it. The
+# fixtures above declare `\title` and `\author` in the preamble, where the
+# adapter was already reading them. Every template a real paper is written in
+# declares them after `\begin{document}` instead, so the affiliations arrived
+# at the analysis as prose and were offered for deletion.
+
+IEEETRAN = FIXTURES / "ieeetran-preamble.tex"
+
+
+@pytest.fixture(scope="module")
+def ieee() -> Document:
+    return load(IEEETRAN)
+
+
+FRONT_MATTER_TEXT = (
+    "Bengaluru, India",
+    "a.researcher@example.edu",
+    "Department of Computer Science",
+    "0000-0002-1825-0097",
+    "supported by nobody in particular",
+    "indoor localization",
+)
+
+
+@pytest.mark.parametrize("phrase", FRONT_MATTER_TEXT)
+def test_no_sentence_is_made_from_front_matter(ieee: Document, phrase: str) -> None:
+    assert phrase not in sentence_text(ieee)
+
+
+@pytest.mark.parametrize("phrase", FRONT_MATTER_TEXT)
+def test_no_paragraph_is_made_from_front_matter(ieee: Document, phrase: str) -> None:
+    for paragraph in ieee.paragraphs:
+        assert phrase not in ieee.text_of(paragraph.span)
+
+
+def test_front_matter_is_recorded_rather_than_dropped(ieee: Document) -> None:
+    """Excluded from the analysis, still visible in the document.
+
+    A report that cannot say what it skipped is indistinguishable from one that
+    did not notice.
+    """
+    kinds = [item.kind for item in ieee.floats]
+    assert FloatKind.FRONT_MATTER in kinds
+
+    covered = "".join(
+        ieee.text_of(item.span) for item in ieee.floats_of_kind(FloatKind.FRONT_MATTER)
+    )
+    assert "Bengaluru, India" in covered
+    assert "indoor localization" in covered
+
+
+def test_front_matter_is_protected_from_patching(ieee: Document) -> None:
+    """The narrow half of SUP-517: a declared range is one the edit pass refuses."""
+    affiliation = ieee.source_text.index("Bengaluru, India")
+    span = Span(affiliation, affiliation + len("Bengaluru, India"))
+    assert not ieee.is_patchable(span)
+
+
+def test_the_abstract_survives_front_matter_handling(ieee: Document) -> None:
+    r"""The one thing the structural rule must not swallow.
+
+    `acmart` puts the abstract before `\maketitle`, so the rule has to stop at
+    it rather than at the macro. And it is where `extract_claim` looks.
+    """
+    joined = sentence_text(ieee)
+    assert "Anchor placement is usually evaluated with the budget left free." in joined
+
+    from research_better.novelty import extract_claim
+
+    claim = extract_claim(ieee)
+    assert claim is not None
+    assert "holds the budget fixed" in claim.text
+
+
+def test_the_title_is_still_read_when_it_sits_in_the_body(ieee: Document) -> None:
+    assert ieee.metadata["title"].startswith("Anchor Placement Under a Fixed Budget")
+    assert "A. Researcher" in ieee.metadata["author"]
+
+
+def test_a_standalone_label_produces_no_paragraph(ieee: Document) -> None:
+    for paragraph in ieee.paragraphs:
+        assert r"\label" not in ieee.text_of(paragraph.span)
+
+
+def test_a_label_sharing_a_line_with_its_heading_produces_no_paragraph(tmp_path: Path) -> None:
+    """The shape that actually occurs. A label alone on a line was already cut;
+    a label following the heading it names was not, because the heading counted
+    as company on the line."""
+    root = tmp_path / "main.tex"
+    root.write_text(
+        "\\begin{document}\n"
+        "\\section{Introduction}\\label{sec:intro}\n"
+        "\nReal prose here.\n"
+        "\\end{document}\n",
+        encoding="utf-8",
+    )
+    document = ingest(root)
+    assert [document.text_of(p.span) for p in document.paragraphs] == ["Real prose here."]
+
+
+def test_front_matter_handling_generalises_past_ieeetran(tmp_path: Path) -> None:
+    r"""`acmart` and `llncs` fail the same way and are covered by the same rule.
+
+    acmart is the harder case: its abstract comes before `\maketitle`, so a
+    rule that ran to the macro would eat it.
+    """
+    acmart = tmp_path / "acmart.tex"
+    acmart.write_text(
+        r"""\documentclass{acmart}
+\begin{document}
+\author{A. Researcher}
+\affiliation{\institution{Some University}}
+\email{a@example.edu}
+\begin{abstract}
+We present a fixed-budget comparison.
+\end{abstract}
+\keywords{anchor placement, coverage}
+\maketitle
+\section{Introduction}
+Greedy placement wins at a fixed budget.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    document = ingest(acmart)
+    joined = sentence_text(document)
+    assert "We present a fixed-budget comparison." in joined
+    assert "Some University" not in joined
+    assert "a@example.edu" not in joined
+    assert "anchor placement, coverage" not in joined
+
+    llncs = tmp_path / "llncs.tex"
+    llncs.write_text(
+        r"""\documentclass{llncs}
+\begin{document}
+\title{Anchors at a Fixed Budget}
+\titlerunning{Anchors}
+\author{A. Researcher\inst{1}}
+\institute{Some University, Bengaluru, India
+\email{a@example.edu}}
+\maketitle
+\begin{abstract}
+We present a fixed-budget comparison.
+\end{abstract}
+\section{Introduction}
+Greedy placement wins at a fixed budget.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    document = ingest(llncs)
+    joined = sentence_text(document)
+    assert "We present a fixed-budget comparison." in joined
+    assert "Bengaluru, India" not in joined
+    assert document.metadata["title"] == "Anchors at a Fixed Budget"
+
+
+def test_a_comment_discussing_the_markup_does_not_move_the_body(tmp_path: Path) -> None:
+    """Found writing the fixture above. Comments talk about a paper's own
+    structure, and a structural search that believes them starts the body
+    inside a note to a co-author."""
+    root = tmp_path / "main.tex"
+    root.write_text(
+        r"""% Everything between \begin{document} and \section{Introduction} is front matter.
+\documentclass{article}
+\begin{document}
+\maketitle
+\section{Introduction}
+Greedy placement wins at a fixed budget.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    document = ingest(root)
+    assert sentence_text(document) == "Greedy placement wins at a fixed budget."

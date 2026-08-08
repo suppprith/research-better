@@ -178,6 +178,15 @@ class DocumentBuilder:
         """Record a document-level fact the format declares out of band."""
         self._metadata[key] = value
 
+    def has_metadata(self, key: str) -> bool:
+        """Whether a field is already recorded.
+
+        A LaTeX paper can declare its title in the preamble and again in the
+        body, and the two are not always the same. The first one read wins, so
+        a later reader has to be able to ask.
+        """
+        return key in self._metadata
+
     def add_protected(self, span: Span) -> None:
         """Mark a range that no patch may overlap."""
         self._protected.append(span)

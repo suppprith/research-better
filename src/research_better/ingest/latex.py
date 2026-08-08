@@ -70,6 +70,12 @@ NON_PROSE_ENVIRONMENTS: dict[str, FloatKind] = {
     "algorithm": FloatKind.ALGORITHM,
     "algorithmic": FloatKind.ALGORITHM,
     "thebibliography": FloatKind.BIBLIOGRAPHY,
+    # Keywords are metadata that happens to be made of words. Read as prose
+    # they become a paragraph nothing in the body supports, which is how a
+    # keyword list ends up proposed for deletion.
+    "IEEEkeywords": FloatKind.FRONT_MATTER,
+    "keywords": FloatKind.FRONT_MATTER,
+    "CCSXML": FloatKind.FRONT_MATTER,
 }
 
 CITATION_COMMANDS = frozenset(
@@ -155,6 +161,45 @@ MARKUP_COMMANDS = frozenset(
     }
 )
 
+# Commands whose argument is front matter rather than argument: who wrote the
+# paper, where they work, and how to reach them. Every one of these holds real
+# words, which is exactly why they have to be named. Read as prose they become
+# paragraphs no body sentence supports, and an orphan paragraph is a deletion
+# candidate.
+#
+# Named across templates on purpose. IEEEtran, acmart, and llncs each invent
+# their own author macros, and the tool ships venue profiles for all three.
+FRONT_MATTER_COMMANDS = frozenset(
+    {
+        "title",
+        "author",
+        "date",
+        "thanks",
+        "orcidlink",
+        "IEEEauthorblockN",
+        "IEEEauthorblockA",
+        "IEEEpubid",
+        "IEEEspecialpapernotice",
+        "markboth",
+        "affiliation",
+        "institution",
+        "streetaddress",
+        "postcode",
+        "city",
+        "country",
+        "email",
+        "keywords",
+        "ccsdesc",
+        "shortauthors",
+        "institute",
+        "inst",
+        "authorrunning",
+        "titlerunning",
+        "address",
+        "additionalaffiliation",
+    }
+)
+
 COMMAND = re.compile(r"\\([A-Za-z@]+)\*?")
 LINE_BREAK = re.compile(r"\\\\(?:\s*\[[^\]]*\])?")
 BLANK_LINE = re.compile(r"\n[ \t]*\n")
@@ -165,6 +210,9 @@ BEGIN_DOCUMENT = re.compile(r"\\begin\s*\{document\}")
 END_DOCUMENT = re.compile(r"\\end\s*\{document\}")
 BIBLIOGRAPHY_COMMAND = re.compile(r"\\(?:bibliography|addbibresource)\s*\{([^}]*)\}")
 BIBITEM = re.compile(r"\\bibitem\s*(?:\[[^\]]*\])?\s*\{([^}]*)\}")
+MAKETITLE = re.compile(r"\\maketitle\b")
+ABSTRACT_BEGIN = re.compile(r"\\begin\s*\{abstract\*?\}")
+SECTIONING = re.compile(r"\\(?:" + "|".join(SECTION_LEVELS) + r")\*?\s*[\[{]")
 
 INLINE_MATH = (
     re.compile(r"(?<!\\)\$\$.*?(?<!\\)\$\$", re.DOTALL),
@@ -313,8 +361,13 @@ class _LatexWalker:
     # Passes ----------------------------------------------------------------
 
     def run(self) -> Document:
-        body_start, body_end = self._mark_preamble_and_trailer()
+        # Comments first. Every structural search below asks where the body
+        # starts and where the front matter ends, and a paper whose comments
+        # discuss `\begin{document}` would otherwise have its body start
+        # inside a note to a co-author.
         self._mark_comments()
+        body_start, body_end = self._mark_preamble_and_trailer()
+        self._mark_front_matter(body_start, body_end)
         self._mark_environments(body_start, body_end)
         self._mark_math()
         self._scan_commands(body_start, body_end)
@@ -327,10 +380,31 @@ class _LatexWalker:
             self.builder.set_file_segments(self.segments)
         return self.builder.build()
 
+    def _uncommented(
+        self, pattern: re.Pattern[str], start: int = 0, end: int | None = None
+    ) -> re.Match[str] | None:
+        """First match of `pattern` that is not sitting inside a comment.
+
+        A paper's comments talk about its own markup. `\\begin{document}` and
+        `\\section{Introduction}` both appear in prose written to a co-author,
+        and a structural search that believes them puts the body boundary in
+        the wrong place.
+        """
+        position = start
+        limit = len(self.source) if end is None else end
+        while position < limit:
+            match = pattern.search(self.source, position, limit)
+            if match is None:
+                return None
+            if not _inside(self.comments, match.start()):
+                return match
+            position = match.start() + 1
+        return None
+
     def _mark_preamble_and_trailer(self) -> tuple[int, int]:
         """Everything outside `document` is configuration, not argument."""
-        opening = BEGIN_DOCUMENT.search(self.source)
-        closing = END_DOCUMENT.search(self.source)
+        opening = self._uncommented(BEGIN_DOCUMENT)
+        closing = self._uncommented(END_DOCUMENT)
         body_start = opening.end() if opening else 0
         body_end = closing.start() if closing else len(self.source)
 
@@ -349,6 +423,65 @@ class _LatexWalker:
             end = _match_brace(preamble, match.end())
             value = preamble[match.end() + 1 : end - 1].strip()
             if value:
+                self.builder.set_metadata(field, value)
+
+    def _mark_front_matter(self, body_start: int, body_end: int) -> None:
+        """The run of the body that names the authors rather than making the argument.
+
+        IEEEtran, acmart, and llncs all put `\\title` and `\\author` after
+        `\\begin{document}`, so the preamble rule above never sees them. The
+        affiliations then arrive at the analysis as ordinary paragraphs, get
+        classified as orphans because no body sentence supports "Bengaluru,
+        India", and are offered for deletion.
+
+        The rule is structural rather than a list of macro names, because every
+        template invents its own macros and a list is always one template
+        behind. Everything from `\\begin{document}` to `\\maketitle` is front
+        matter. Where there is no `\\maketitle`, the first section heading ends
+        it.
+
+        The abstract is the exception that has to be respected in both cases.
+        It is prose, it is where `extract_claim` looks for the contribution,
+        and `acmart` puts it before `\\maketitle`, so it caps the range.
+        """
+        end = self._front_matter_end(body_start, body_end)
+        if end <= body_start:
+            return
+        self._read_metadata(self.source[body_start:end])
+        self._exclude(body_start, end)
+        self.builder.add_float(
+            FloatKind.FRONT_MATTER, self.builder.span(body_start, end), label="front matter"
+        )
+
+    def _front_matter_end(self, body_start: int, body_end: int) -> int:
+        limit = body_end
+        stops = (
+            self._uncommented(ABSTRACT_BEGIN, body_start, body_end),
+            self._uncommented(SECTIONING, body_start, body_end),
+        )
+        found = [stop.start() for stop in stops if stop is not None]
+        if found:
+            limit = min(limit, min(found))
+
+        title = self._uncommented(MAKETITLE, body_start, body_end)
+        if title is not None and title.end() <= limit:
+            return title.end()
+        return limit if found else body_start
+
+    def _read_metadata(self, region: str) -> None:
+        """Title and author out of the body's front matter.
+
+        Excluding the range is what stops it being analysed. Reading it first is
+        what stops that being a loss: the paper still knows its own title, and
+        the report can name what it skipped rather than silently dropping it.
+        """
+        for match in COMMAND.finditer(region):
+            field = METADATA_COMMANDS.get(match.group(1))
+            if field is None or match.end() >= len(region) or region[match.end()] != "{":
+                continue
+            end = _match_brace(region, match.end())
+            value = _plain(region[match.end() + 1 : end - 1])
+            if value and not self.builder.has_metadata(field):
                 self.builder.set_metadata(field, value)
 
     def _mark_comments(self) -> None:
@@ -376,7 +509,7 @@ class _LatexWalker:
                 return
             name = match.group(1).rstrip("*")
             kind = NON_PROSE_ENVIRONMENTS.get(name)
-            if kind is None:
+            if kind is None or self._is_excluded(match.start()):
                 index = match.end()
                 continue
             end = _find_environment_end(self.source, match.group(1), match.end())
@@ -421,6 +554,11 @@ class _LatexWalker:
 
             if name in SECTION_LEVELS:
                 self._take_heading(name, match.start(), match.end(), end)
+            elif name in FRONT_MATTER_COMMANDS:
+                # Named on top of the structural rule above, because acmart
+                # puts `\keywords` after the abstract and llncs puts
+                # `\institute` wherever the author felt like it.
+                self._take_front_matter(name, match.start(), match.end(), end)
             elif name in CITATION_COMMANDS:
                 self._take_citation(name, match.start(), match.end(), end)
                 self.protected.append((match.start(), end))
@@ -526,6 +664,17 @@ class _LatexWalker:
         self._exclude(start, end)
         self.protected.append((start, after_name))
 
+    def _take_front_matter(self, name: str, start: int, after_name: int, end: int) -> None:
+        """Cut an author or keyword macro out, keeping what it declared."""
+        field = METADATA_COMMANDS.get(name)
+        if field is not None and after_name < len(self.source) and self.source[after_name] == "{":
+            close = _match_brace(self.source, after_name)
+            value = _plain(self.source[after_name + 1 : close - 1])
+            if value and not self.builder.has_metadata(field):
+                self.builder.set_metadata(field, value)
+        self._exclude(start, end)
+        self.builder.add_float(FloatKind.FRONT_MATTER, self.builder.span(start, end), label=name)
+
     def _take_citation(self, name: str, start: int, after_name: int, end: int) -> None:
         index = after_name
         while index < len(self.source) and self.source[index] in "[ ":
@@ -559,7 +708,7 @@ class _LatexWalker:
         command that pulls it in. What matters downstream is the metadata,
         which is the input citation verification works from.
         """
-        match = BIBLIOGRAPHY_COMMAND.search(self.source)
+        match = self._uncommented(BIBLIOGRAPHY_COMMAND)
         if match is None:
             return
         span = self.builder.span(match.start(), match.end())
@@ -610,10 +759,27 @@ class _LatexWalker:
                 self.protected.append((position, position + 1))
 
     def _on_its_own_line(self, start: int, end: int) -> bool:
+        """Whether this command is the only prose-bearing thing on its line.
+
+        Text already cut out does not count as company. `\\section{Intro}` and
+        `\\label{sec:intro}` share a line in most real papers, and the heading
+        is excluded by the time the label is reached, so a label that looks
+        accompanied is in fact alone. Without this the label survived as a
+        paragraph whose whole text was `\\label{sec:intro}`, which then read as
+        an orphan and became a deletion candidate.
+        """
         line_start = self.source.rfind("\n", 0, start) + 1
         line_end = self.source.find("\n", end)
         line_end = len(self.source) if line_end < 0 else line_end
-        return not self.source[line_start:start].strip() and not self.source[end:line_end].strip()
+        return not self._residue(line_start, start) and not self._residue(end, line_end)
+
+    def _residue(self, start: int, end: int) -> str:
+        """What is left on a stretch of line once excluded ranges are removed."""
+        kept = []
+        for offset in range(start, end):
+            if not self._is_excluded(offset):
+                kept.append(self.source[offset])
+        return "".join(kept).strip()
 
     def _exclude(self, start: int, end: int) -> None:
         if end > start:
@@ -622,6 +788,18 @@ class _LatexWalker:
 
     def _is_excluded(self, offset: int) -> bool:
         return any(low <= offset < high for low, high in self.excluded)
+
+
+def _plain(text: str) -> str:
+    """A metadata value with its markup taken off.
+
+    `\\author{\\IEEEauthorblockN{A. Researcher}}` should record the name, not
+    the macro that wraps it. Only metadata goes through this. Prose is never
+    rewritten, because a span has to recover the exact source characters.
+    """
+    stripped = LINE_BREAK.sub(" ", text)
+    stripped = COMMAND.sub(" ", stripped).replace("{", " ").replace("}", " ")
+    return " ".join(stripped.split())
 
 
 def _skip_optional(text: str, index: int) -> int:
