@@ -1,0 +1,12 @@
+{
+  "body": "{\"meta\": {\"count\": 0, \"db_response_time_ms\": 11, \"page\": 1, \"per_page\": 5, \"groups_count\": null, \"x_query\": {\"oql\": \"works where title has (Adaptive Query Expansion Under Drift Ferreira Osei)\", \"oqo\": {\"get_rows\": \"works\", \"filter_rows\": [{\"column_id\": \"display_name.search\", \"value\": \"Adaptive Query Expansion Under Drift Ferreira Osei\", \"operator\": \"has\"}]}, \"url\": \"/works?filter=display_name.search:Adaptive Query Expansion Under Drift Ferreira Osei&per_page=5\"}, \"cost_usd\": 0.001}, \"results\": [], \"group_by\": []}",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.openalex.org/works?filter=title.search%3AAdaptive+Query+Expansion+Under+Drift+Ferreira+Osei&per-page=5",
+  "source": "openalex",
+  "status": 200,
+  "stored_at": 1786166528.372331,
+  "stored_at_readable": "2026-08-08T05:22:08+00:00"
+}

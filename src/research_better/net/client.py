@@ -152,12 +152,17 @@ class PoliteClient:
     ) -> Response:
         limit = self.limits.for_source(source)
         params = dict(params or {})
-        if limit.polite_parameter and self.contact:
-            params.setdefault(limit.polite_parameter, self.contact)
 
+        # The cache key is computed before the contact address is attached. A
+        # mailto changes which pool serves the request, never what comes back,
+        # so keying on it would give every user of a shared fixture set a
+        # different key for the same question.
         key = cache_key("GET", url, params)
         request_description = normalize_request("GET", url, params)
         ttl = self.limits.search_ttl_seconds if ttl_seconds is None else ttl_seconds
+
+        if limit.polite_parameter and self.contact:
+            params.setdefault(limit.polite_parameter, self.contact)
 
         if not self.refresh:
             cached = self.cache.read(source, key, ttl)

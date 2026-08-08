@@ -1,0 +1,12 @@
+{
+  "body": "{\"paperId\": \"47ced790a563344efae66588b5fb7fe6cca29ed3\", \"externalIds\": {\"MAG\": \"2155482025\", \"DBLP\": \"journals/ftir/RobertsonZ09\", \"DOI\": \"10.1561/1500000019\", \"CorpusId\": 207178704}, \"title\": \"The Probabilistic Relevance Framework: BM25 and Beyond\", \"venue\": \"Foundations and Trends in Information Retrieval\", \"year\": 2009, \"citationCount\": 5857, \"openAccessPdf\": {\"url\": \"\", \"status\": \"CLOSED\", \"license\": null, \"disclaimer\": \"Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1561/1500000019?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1561/1500000019, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use.\"}, \"publicationTypes\": [\"JournalArticle\"], \"authors\": [{\"authorId\": \"144430625\", \"name\": \"S. Robertson\"}, {\"authorId\": \"2833561\", \"name\": \"H. Zaragoza\"}], \"abstract\": null}\n",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.semanticscholar.org/graph/v1/paper/DOI:10.1561/1500000019?fields=title%2Cyear%2Cauthors%2Cabstract%2CexternalIds%2CcitationCount%2Cvenue%2CopenAccessPdf%2CpublicationTypes",
+  "source": "semantic_scholar",
+  "status": 200,
+  "stored_at": 1786166524.039883,
+  "stored_at_readable": "2026-08-08T05:22:04+00:00"
+}
