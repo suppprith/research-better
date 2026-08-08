@@ -26,6 +26,11 @@ OWNERS = {
     "rhythm-thresholds.toml": "fluff",
     "source-limits.toml": "net",
     "venue-profiles.md": "reviewer",
+    # The one reference with no code pass behind it. The synthesis is the
+    # skill's own last step, and it is a reference rather than more SKILL.md
+    # because the file is at its enforced word budget and this is knowledge
+    # needed once, at the end.
+    "final-analysis.md": "skill",
 }
 
 MAXIMUM_WORDS = 1400

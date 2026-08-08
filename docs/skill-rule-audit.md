@@ -43,6 +43,26 @@ nothing for a check to check.
 | Never answer a reviewer question | Nothing here generates prose, so today it is structural. The skill layer is the one place that could, so it is stated there |
 | Pass on what `doctor` reports | The CLI prints it. Whether it reaches the user is the model's |
 
+## One thing deliberately not moved
+
+**`rb report` does not print instructions aimed at whatever model is reading
+it.** The argument for it was real: the synthesis step only fires when the
+skill is loaded, and an agent driving the bare CLI never sees it, so a closing
+line in the report saying "now write the analysis" would reach that agent.
+
+Decided against, for two reasons.
+
+The bare-CLI path already got its fix. Passes print their findings now rather
+than counts, so an agent driving `rb` sees what is wrong with the paper whether
+or not it was told to look. That was the actual complaint, and output design
+fixed it.
+
+And a tool that writes prompts into its own stdout is putting instructions in a
+data channel. Today it would be one helpful sentence to a cooperating agent.
+The pattern it establishes is that this tool's output is a place to address
+models, and nothing about that pattern stays one sentence long. The skill file
+is the honest home for an instruction to a model, and it stays there.
+
 ## Obligations, which are neither
 
 Written into `docs/GUARANTEES.md` rather than left implied. You cannot make a
