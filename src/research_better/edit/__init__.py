@@ -47,6 +47,14 @@ from research_better.edit.voicelock import (
     screen,
     within_budget,
 )
+from research_better.edit.writeback import (
+    WritebackError,
+    Written,
+    backups_of,
+    revert,
+    uncommitted,
+)
+from research_better.edit.writeback import apply as write_back
 
 NAME = "edit"
 
@@ -67,8 +75,11 @@ __all__ = [
     "Requirement",
     "VoiceLock",
     "WordBudgetError",
+    "WritebackError",
+    "Written",
     "apply_to",
     "assemble",
+    "backups_of",
     "build",
     "compatible",
     "evidence_ids",
@@ -76,10 +87,13 @@ __all__ = [
     "load_decisions",
     "rejected_ids",
     "resolve_overlaps",
+    "revert",
     "review",
     "save_decisions",
     "screen",
     "to_diff",
     "to_summary",
+    "uncommitted",
     "within_budget",
+    "write_back",
 ]

@@ -118,8 +118,9 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 markers = [
     "network: hits a live external API. Excluded from the default run.",
+    "latex: needs a LaTeX toolchain on PATH. Excluded from the default run.",
 ]
-addopts = "-m 'not network'"
+addopts = "-m 'not network and not latex'"
 
 [tool.coverage.run]
 source = ["src/research_better"]

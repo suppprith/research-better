@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from research_better import __version__
+from research_better import edit as edit_layer
 from research_better.artifacts import ArtifactStore
 from research_better.errors import ResearchBetterError
 from research_better.ingest import load
@@ -155,6 +156,14 @@ def build_parser() -> argparse.ArgumentParser:
                 ),
             )
             sub.add_argument(
+                "--force",
+                action="store_true",
+                help=(
+                    "apply even to a file with uncommitted changes. A backup is still "
+                    "taken, but git will not be able to give the original back"
+                ),
+            )
+            sub.add_argument(
                 "--target-reduction",
                 type=float,
                 default=0.0,
@@ -184,6 +193,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = commands.add_parser("run", parents=[parent], help="every implemented pass, in order")
     run.add_argument("draft", type=Path, help="path to the paper")
+
+    back = commands.add_parser(
+        "revert", parents=[parent], help="restore the most recent backup of a draft"
+    )
+    back.add_argument("draft", type=Path, help="path to the paper")
 
     return parser
 
@@ -246,6 +260,18 @@ def _load_document(args: argparse.Namespace) -> Document:
     return load(path)
 
 
+def revert(args: argparse.Namespace, console: Console) -> int:
+    """Undo the last --apply. Not a pass: it reads no artifact and writes none."""
+    draft = Path(args.draft)
+    if not draft.is_file():
+        raise ResearchBetterError(f"{draft} does not exist")
+
+    restored = edit_layer.revert(draft)
+    console.say(f"{draft.name} restored from {restored.name}")
+    console.detail(f"  the backup was kept at {restored}")
+    return EXIT_CLEAN
+
+
 def run(args: argparse.Namespace, console: Console) -> int:
     document = _load_document(args)
     source_hash = document.source_hash
@@ -287,6 +313,8 @@ def run(args: argparse.Namespace, console: Console) -> int:
             store=store,
             interactive=bool(getattr(args, "interactive", False)),
             target_reduction=float(getattr(args, "target_reduction", 0.0) or 0.0),
+            apply=bool(getattr(args, "apply", False)),
+            force=bool(getattr(args, "force", False)),
         )
         for name in names:
             entry_pass = PASSES[name]
@@ -353,7 +381,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     try:
-        return run(args, console)
+        return revert(args, console) if args.command == "revert" else run(args, console)
     except ResearchBetterError as error:
         # The user asked for a paper to be checked, not for a traceback. Only
         # errors this package raises on purpose get the short treatment. A real

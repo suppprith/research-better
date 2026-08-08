@@ -1,0 +1,54 @@
+% A deliberately plain paper that a stock LaTeX install can build.
+%
+% The other LaTeX fixture uses a conference class, natbib, and a figure file
+% that does not exist, because it exists to exercise ingest against what real
+% papers look like. This one exists to prove that a paper still compiles after
+% the ledger has been applied to it, which means it has to compile in the first
+% place, on texlive-latex-base and nothing else.
+%
+% Three things are planted on purpose. Filler, so the ledger is not empty.
+% Sentences of very different lengths, so the author's length band is wide
+% enough that the voice lock does not refuse every cut and leave the compile
+% test proving nothing. And filler sitting right beside inline math and a
+% cross-reference, so an applied cut has to miss a protected range by inches
+% rather than by half a page.
+\documentclass{article}
+
+\title{Sparse Retrieval at Equal Cost}
+\author{A. Researcher}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+It is important to note that dense encoders are reported to beat sparse
+baselines on this benchmark. We present a comparison that holds the budget
+fixed rather than holding the index size fixed, and we report recall at ten
+for every configuration we measured in this study, across the three corpora we
+had access to and across the five random seeds we ran each configuration on.
+We tested three systems.
+
+Needless to say, the gap closes once the cost is held fixed.
+
+\section{Method}
+
+It should be mentioned that the corpus is indexed with BM25 using
+$k_1 = 0.9$ and $b = 0.4$.
+Queries are expanded with the top three terms taken from a first pass over the
+corpus, and the expansion is applied before the second pass rather than after
+it, which matters because the two orders give different results on the shorter
+queries in this benchmark.
+We ran each pass once.
+
+\section{Results}
+
+Recall at ten rises from 0.62 to 0.71 with expansion enabled, and the cost is
+one third of the dense baseline over the five thousand queries we sampled for
+this comparison, measured on the same hardware for every system we compared.
+We significantly outperform the dense encoder at the budget we held fixed in
+Section~\ref{sec:intro}.
+The gain holds on every corpus.
+
+\end{document}

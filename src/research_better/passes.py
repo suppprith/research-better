@@ -57,6 +57,9 @@ class PassContext:
     against, never a quota it fills: the ceiling on growing the paper is
     enforced, and falling short of a reduction is a fact about the draft."""
 
+    apply: bool = False
+    force: bool = False
+
     def require_client(self, pass_name: str) -> PoliteClient:
         if self.client is None:
             raise RuntimeError(f"the {pass_name} pass needs an HTTP client and was given none")
@@ -265,12 +268,31 @@ def _edit(context: PassContext) -> PassResult:
         "target_reduction": budget.target_reduction,
         "note": budget.shortfall(words),
     }
+
+    summary = (
+        f"{len(ledger.edits)} edit(s) proposed, {ledger.words_delta:+d} words, "
+        f"{len(ledger.dropped)} not proposed"
+    )
+    if context.apply and ledger.edits:
+        written = edit_layer.write_back(
+            document,
+            list(ledger.edits),
+            force=context.force,
+            target_reduction=budget.target_reduction,
+        )
+        payload["written"] = written.to_json()
+        # The draft has changed, so every artifact including this one now
+        # describes a file that no longer exists. Saying so here is cheaper than
+        # the next run's warning, which arrives after the author has moved on.
+        summary += (
+            f", written to {len(written.files)} file(s), backup at "
+            f"{written.backups[0].name}. Rerun the passes: the artifacts now "
+            f"describe the draft as it was."
+        )
+
     return PassResult(
         payload=payload,
-        summary=(
-            f"{len(ledger.edits)} edit(s) proposed, {ledger.words_delta:+d} words, "
-            f"{len(ledger.dropped)} not proposed"
-        ),
+        summary=summary,
         markdown=edit_layer.to_summary(ledger) + f"\n{budget.shortfall(words)}\n",
         attachments=((".diff", patch),) if patch else (),
         counts_as_finding=bool(ledger.edits),

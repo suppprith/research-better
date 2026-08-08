@@ -67,3 +67,27 @@ jobs:
       # schedule in network.yml.
       - name: pytest
         run: pytest --cov --cov-report=term-missing --cov-fail-under=70
+
+  latex:
+    name: latex still compiles after writeback
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      # The claim is that a paper still builds after the ledger has been
+      # applied to it. Asserting that without a compiler would be assuming
+      # exactly the thing worth checking, so this job installs one.
+      - name: Install LaTeX
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-base
+
+      - name: Install
+        run: pip install -e ".[all,dev]"
+
+      - name: pytest
+        run: pytest -m latex --no-cov
