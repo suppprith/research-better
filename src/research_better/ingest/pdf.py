@@ -31,6 +31,7 @@ from __future__ import annotations
 import re
 import statistics
 from dataclasses import dataclass, field
+from io import BytesIO
 from itertools import pairwise
 from pathlib import Path
 from typing import Any
@@ -297,14 +298,25 @@ def _page_lines(fragments: list[Fragment], width: float) -> tuple[list[Fragment]
 
 def read(path: Path) -> Reading:
     """Every line of the paper, in reading order, with what was unsure."""
-    pypdf = require("pypdf", "pdf", "PDF ingest")
-    try:
-        reader = pypdf.PdfReader(str(path))
-    except Exception as error:  # pypdf raises several unrelated types
-        raise IngestError(f"{path.name} could not be read as a PDF: {error}") from None
+    return read_bytes(path.read_bytes(), path.name)
 
+
+def read_bytes(data: bytes, name: str = "the PDF") -> Reading:
+    """The same, for a PDF that was downloaded rather than opened.
+
+    A cited work's open-access copy arrives as bytes from somebody else's
+    server, so the whole extraction sits inside the guard rather than only the
+    parse. An unreadable page of a stranger's PDF is a source this tool could
+    not see, which is a thing to report, never a thing to crash on.
+    """
+    pypdf = require("pypdf", "pdf", "PDF ingest")
     notes: list[str] = []
-    fragments, boxes = _fragments(reader)
+    try:
+        reader = pypdf.PdfReader(BytesIO(data))
+        fragments, boxes = _fragments(reader)
+    except Exception as error:  # pypdf raises several unrelated types
+        raise IngestError(f"{name} could not be read as a PDF: {error}") from None
+
     fragments = _drop_margins(fragments, boxes, notes)
     fragments = _drop_line_numbers(fragments, notes)
 
@@ -438,6 +450,22 @@ def _text_of(block: _Block) -> str:
     for line in block.lines[1:]:
         joined = _dehyphenate(joined, line)
     return " ".join(joined.split())
+
+
+def prose(reading: Reading) -> str:
+    """The readable text, for a caller that wants text rather than a document.
+
+    Table rows, captions, and reference entries are left out. A passage matcher
+    handed a table row will quote it back as though the author had written it
+    as a sentence, and a bibliography is a list of other people's titles rather
+    than anything this source claims.
+    """
+    return "\n\n".join(
+        _text_of(block) for block in _rebuild(reading) if block.kind in READABLE
+    ).strip()
+
+
+READABLE = frozenset({"paragraph", "heading"})
 
 
 def ingest(path: Path | str, source: str = "") -> Document:

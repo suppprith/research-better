@@ -4,8 +4,9 @@ Three routes, tried in order of how much they let the tool see:
 
 1. arXiv's rendered HTML, which is full text and needs no optional dependency.
    Only recent submissions have it.
-2. An open-access PDF, which needs the `pdf` extra. Without it this route is
-   skipped and the reason is recorded rather than the failure being silent.
+2. An open-access PDF, read with the same adapter that reads the author's own,
+   which needs the `pdf` extra. Without it this route is skipped and the reason
+   is recorded rather than the failure being silent.
 3. The abstract, which is not full text and is labelled as such everywhere it
    is used.
 
@@ -20,8 +21,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from research_better.errors import IngestError
 from research_better.extras import available
-from research_better.net import PoliteClient, SourceUnavailableError
+from research_better.net import OfflineCacheMissError, PoliteClient, SourceUnavailableError
 from research_better.sources.base import Work
 
 ARXIV_HTML = "https://arxiv.org/html/{arxiv_id}"
@@ -35,6 +37,12 @@ ENTITY = re.compile(r"&(#\d+|[a-z]+);", re.IGNORECASE)
 FULL_TEXT = "full_text"
 ABSTRACT = "abstract"
 NONE = "none"
+
+MINIMUM_FULL_TEXT = 2000
+"""Characters a retrieval has to yield before it counts as full text. A stub
+page, a cover sheet, or a scan comes in far under this, and labelling one of
+those full text is what turns "nothing was read" into "the source does not say
+it"."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,11 +104,14 @@ def retrieve(client: PoliteClient, work: Work) -> SourceText:
                     f'Install it with: pip install "research-better[pdf]"'
                 ),
             )
+        text, why = _open_access_pdf(client, work.open_access_url)
+        if text is not None:
+            return text
         return _abstract(
             work,
             note=(
-                "PDF extraction is not wired up yet, so only the abstract was read. "
-                "It lands with the PDF ingest adapter."
+                f"The open-access PDF at {work.open_access_url} was not read, because "
+                f"{why}, so only the abstract was used."
             ),
         )
 
@@ -117,9 +128,52 @@ def _arxiv_html(client: PoliteClient, arxiv_id: str) -> SourceText | None:
         # Older submissions have no rendered HTML. Not an error, just a limit.
         return None
     text = html_to_text(response.text)
-    if len(text) < 2000:
+    if len(text) < MINIMUM_FULL_TEXT:
         return None
     return SourceText(FULL_TEXT, text, url, "Full text read from the arXiv HTML rendering.")
+
+
+def _open_access_pdf(client: PoliteClient, url: str) -> tuple[SourceText | None, str]:
+    """The cited work's own PDF, read with the same adapter as the author's.
+
+    An open-access copy sits wherever the publisher or the repository put it,
+    so this is the one route that fetches from a host nobody chose. Anything
+    that is not a readable paper comes back with the reason instead, and the
+    caller falls to the abstract carrying it. Nothing here is fatal to a run: a
+    source read badly is worse evidence than a source honestly not read, and an
+    abstract can never make a claim come back unsupported.
+
+    An offline cache miss is caught here rather than left to be loud, which it
+    is everywhere else. Loudness earns its place where silence would show up
+    downstream as a finding about the paper, and this cannot: the fallback is
+    labelled an abstract, and a claim checked against one comes back unchecked.
+    """
+    from research_better.ingest.pdf import prose, read_bytes
+
+    try:
+        response = client.get("open_access", url, ttl_seconds=client.limits.fulltext_ttl_seconds)
+    except OfflineCacheMissError:
+        return None, "it is not in the cache and this run is offline"
+    except SourceUnavailableError as error:
+        return None, f"the host did not answer ({error.reason})"
+
+    if not response.ok:
+        return None, f"the host answered {response.status}"
+    if not response.body.startswith(b"%PDF"):
+        # A repository that has moved the file answers with a landing page and
+        # a 200. Extracting that would yield a navigation menu.
+        return None, "what came back was not a PDF, which is what a moved file looks like"
+
+    try:
+        text = prose(read_bytes(response.body, url))
+    except IngestError:
+        return None, "the file could not be parsed"
+    if len(text) < MINIMUM_FULL_TEXT:
+        # A scan, a cover sheet, or a page of figures. Calling that full text
+        # would let a claim come back unsupported on the strength of a document
+        # nothing was actually read from.
+        return None, "it yielded too little text to be a paper, which is what a scan does"
+    return SourceText(FULL_TEXT, text, url, "Full text read from the open-access PDF."), ""
 
 
 def _abstract(work: Work, note: str = "") -> SourceText:

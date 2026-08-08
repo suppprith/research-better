@@ -122,18 +122,26 @@ PAGE_TWO_RIGHT = [
 ]
 
 
-def build(target: Path, line_numbers: bool = False) -> Path:
-    """Write a two-page, two-column paper and return its path."""
-    second = _page_lines(PAGE_TWO_LEFT, PAGE_TWO_RIGHT, 2, line_numbers)
+def build(target: Path, line_numbers: bool = False, body_pages: int = 1) -> Path:
+    """Write a two-column paper and return its path.
+
+    `body_pages` repeats the first page for a caller that needs a paper long
+    enough to count as full text rather than a stub. Only the first page
+    repeats, because the last one opens the reference section and a second
+    REFERENCES heading would put the pages after it in the bibliography.
+    """
+    last = body_pages + 1
+    second = _page_lines(PAGE_TWO_LEFT, PAGE_TWO_RIGHT, last, line_numbers)
     table_top = TOP - len(PAGE_TWO_LEFT) * LINE_HEIGHT - LINE_HEIGHT
     for row, cells in enumerate(TABLE_ROWS):
         for column, cell in enumerate(cells):
             second.append((LEFT_COLUMN + column * 80, table_top - row * LINE_HEIGHT, cell))
 
     streams = [
-        _stream(_page_lines(PAGE_ONE_LEFT, PAGE_ONE_RIGHT, 1, line_numbers)),
-        _stream(second),
+        _stream(_page_lines(PAGE_ONE_LEFT, PAGE_ONE_RIGHT, number, line_numbers))
+        for number in range(1, last)
     ]
+    streams.append(_stream(second))
     return _write(target, streams)
 
 

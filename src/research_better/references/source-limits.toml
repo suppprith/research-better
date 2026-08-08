@@ -49,6 +49,17 @@ burst = 5
 documented = "100,000 requests per day. The email parameter is required, not optional"
 polite_parameter = "email"
 
+[open_access]
+# Not an API and not one host. An open-access PDF sits wherever the publisher
+# or the institutional repository put it, so every one of them shares this
+# bucket. A repository has no terms of use to read and no rate to publish,
+# which is a reason to be slower rather than faster: one request a second, and
+# a paper with eighty references still reads as a person rather than a crawler.
+base_url = ""
+requests_per_second = 1.0
+burst = 2
+documented = "nothing published. A repository serving PDFs has no API terms, so this number is self-imposed"
+
 [cache]
 # A resolved DOI is permanent. The record for 10.1145/1234.5678 will say the
 # same thing next year, so re-fetching it is pure waste on both ends.
