@@ -31,8 +31,8 @@ Sparse retrieval has a long history in the literature [2]. Dense encoders were
 introduced later and have received considerable attention since [3].
 
 Furthermore, the question of evaluation has been raised repeatedly [4]. The
-retracted analysis of Vogel and Prasad remains widely cited despite its
-withdrawal, and its conclusions continue to circulate.
+retracted analysis in [5] remains widely cited despite its withdrawal, and its
+conclusions continue to circulate.
 
 Moreover, benchmark design has attracted a literature of its own. Several
 authors have argued that saturation makes comparison meaningless.
@@ -95,10 +95,17 @@ framework for adaptive retrieval was presented.
     https://doi.org/10.1561/1500000019
 
 [3] Karpukhin, V. and Oguz, B. A Complete Survey of Dense Retrieval Methods.
-    EMNLP, 2020.
+    EMNLP, 2020. https://doi.org/10.18653/v1/2020.emnlp-main.550
 
 [4] Marchetti, D. and Sowande, A. Benchmark Saturation in Retrieval Evaluation.
     Proceedings of the International Conference on Search Systems, 2024.
 
-[5] Vogel, K. and Prasad, R. Query Drift and Its Consequences. RETRACTED.
-    Journal of Search Science, 2019.
+[5] Wakefield, A. J. and Murch, S. H. Ileal-lymphoid-nodular hyperplasia,
+    non-specific colitis, and pervasive developmental disorder in children.
+    The Lancet, 1998. https://doi.org/10.1016/S0140-6736(97)11096-0
+
+[6] Manning, C. D., Raghavan, P., and Schutze, H. Introduction to Information
+    Retrieval. Cambridge University Press, 2008.
+
+[7] Okonkwo, A. Ranking Under Budget Constraints. PhD thesis, University of
+    Nowhere, 2017.

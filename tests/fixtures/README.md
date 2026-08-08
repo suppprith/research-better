@@ -28,13 +28,30 @@ The paper is not subtle. It is a test instrument, not a writing sample.
 
 ### Citations
 
-| Key | Kind |
-|---|---|
-| `[1]` | Invented. No such paper, and the DOI does not resolve |
-| `[2]` | Real. Robertson and Zaragoza, BM25 and Beyond, 2009 |
-| `[3]` | Real authors, wrong title. Karpukhin and Oguz wrote about dense passage retrieval, not "A Complete Survey of Dense Retrieval Methods" |
-| `[4]` | Invented. Plausible-looking venue that does not exist |
-| `[5]` | Stands in for a retracted paper. Cited in Related Work as still circulating |
+| Key | Kind | Expected verdict |
+|---|---|---|
+| `[1]` | Invented. No such paper, and the DOI does not resolve | `NOT_FOUND` |
+| `[2]` | Real. Robertson and Zaragoza, BM25 and Beyond, 2009 | `VERIFIED` |
+| `[3]` | Real DOI carrying a wrong title. The DOI is the real Karpukhin and Oguz paper on dense passage retrieval, cited under a title they never wrote | `TITLE_MISMATCH` |
+| `[4]` | Invented. Plausible-looking venue that does not exist | `NOT_FOUND` |
+| `[5]` | Genuinely retracted, with a real Crossref retraction notice. Cited in Related Work as still circulating | `RETRACTED` |
+| `[6]` | A real book. Books are indexed unevenly, and this one is the check that a book does not produce a false signal | `VERIFIED` |
+| `[7]` | An invented thesis. Theses are not indexed at all, so the verdict must explain that rather than insinuate fabrication | `NOT_FOUND`, flagged `likely_unindexed` |
+
+Entries `[6]` and `[7]` exist for one reason: a tool that reports an unindexed
+work as missing without saying why is making a fabrication insinuation it cannot
+support, and authors would be right to stop reading it. `NOT_FOUND` is never
+styled as proof of anything.
+
+### Recorded API responses
+
+`http/` holds what OpenAlex, Crossref, Semantic Scholar, and arXiv actually
+returned for these entries. CI replays them offline, so an unrecorded request
+raises instead of quietly going out. Refresh with:
+
+```
+python scripts/record_fixtures.py --refresh
+```
 
 ### The paragraph that must survive
 

@@ -17,10 +17,31 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from research_better import fluff, voice
+from research_better import fluff, grounding, voice
 from research_better.findings import Finding
 from research_better.model import Document
+from research_better.net import PoliteClient
 from research_better.serialize import document_to_json
+
+
+@dataclass(frozen=True, slots=True)
+class PassContext:
+    """Everything a pass is allowed to reach for.
+
+    The client is optional because most passes are offline by nature. Handing
+    one to a pass that does not need it would let a deterministic check quietly
+    grow a network dependency.
+    """
+
+    document: Document
+    client: PoliteClient | None = None
+    offline: bool = False
+    refresh: bool = False
+
+    def require_client(self, pass_name: str) -> PoliteClient:
+        if self.client is None:
+            raise RuntimeError(f"the {pass_name} pass needs an HTTP client and was given none")
+        return self.client
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,13 +58,15 @@ class Pass:
     help: str
     implemented: bool
     phase: str
-    run: Callable[[Document], PassResult] | None = None
+    run: Callable[[PassContext], PassResult] | None = None
+    needs_network: bool = False
 
 
-def _ingest(document: Document) -> PassResult:
-    counts = document_to_json(document)["counts"]
+def _ingest(context: PassContext) -> PassResult:
+    payload = document_to_json(context.document)
+    counts = payload["counts"]
     return PassResult(
-        payload=document_to_json(document),
+        payload=payload,
         summary=(
             f"{counts['sentences']} sentences, {counts['words_of_prose']} words of prose, "
             f"{counts['citations_used']} citations used, "
@@ -52,8 +75,8 @@ def _ingest(document: Document) -> PassResult:
     )
 
 
-def _fluff(document: Document) -> PassResult:
-    findings = fluff.analyse(document)
+def _fluff(context: PassContext) -> PassResult:
+    findings = fluff.analyse(context.document)
     advisory = sum(1 for finding in findings if finding.advisory)
     actionable = sum(1 for finding in findings if finding.auto_actionable)
     return PassResult(
@@ -63,8 +86,8 @@ def _fluff(document: Document) -> PassResult:
     )
 
 
-def _voice(document: Document) -> PassResult:
-    report = voice.extract(document)
+def _voice(context: PassContext) -> PassResult:
+    report = voice.extract(context.document)
     return PassResult(
         payload=report.to_json(),
         summary=(
@@ -72,6 +95,18 @@ def _voice(document: Document) -> PassResult:
             f"{len(report.whole_paper.terminology)} terms recorded, "
             f"{len(report.sections)} section profile(s)"
         ),
+    )
+
+
+def _ground(context: PassContext) -> PassResult:
+    report = grounding.analyse(context.document, context.require_client("ground"))
+    findings = grounding.to_findings(context.document, report)
+    return PassResult(
+        payload=report.to_json(),
+        findings=tuple(findings),
+        # The summary says what was checked, not how clean the paper is. A
+        # count of resolved entries is a fact. A share would read as a score.
+        summary=f"{report.verified} of {len(report.checks)} entries resolved and matched",
     )
 
 
@@ -111,8 +146,10 @@ PASSES: dict[str, Pass] = {
         name="ground",
         artifact="grounding",
         help="verify citations against the literature",
-        implemented=False,
+        implemented=True,
         phase="P3 grounding and citation verification",
+        run=_ground,
+        needs_network=True,
     ),
     "ask": Pass(
         name="ask",

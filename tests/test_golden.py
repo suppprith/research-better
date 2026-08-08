@@ -8,15 +8,18 @@ rather than skipping.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 
 from conftest import GOOD_PARAGRAPH_OPENER
 from golden_harness import Golden, GoldenMismatchError, diff
-from research_better import fluff, voice
+from research_better import fluff, grounding, voice
 from research_better.model import Document
+from research_better.net import HttpCache, PoliteClient
+from research_better.sources import ArxivAdapter, CrossrefAdapter, OpenAlexAdapter
 
-PASSES = ("ingest", "fluff", "voice")
+PASSES = ("ingest", "fluff", "voice", "grounding")
 """Every pass that produces a reviewable artifact. Extended as passes land."""
 
 
@@ -51,6 +54,13 @@ def test_fluff_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
 
 def test_voice_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
     golden.check("voice", voice.extract(bad_paper).to_json())
+
+
+def test_grounding_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
+    cache = HttpCache(Path(__file__).parent / "fixtures" / "http", ignore_ttl=True)
+    with PoliteClient(cache, offline=True) as client:
+        adapters = [OpenAlexAdapter(), CrossrefAdapter(), ArxivAdapter()]
+        golden.check("grounding", grounding.analyse(bad_paper, client, adapters).to_json())
 
 
 def test_every_pass_has_a_golden_file(golden: Golden) -> None:
@@ -91,9 +101,12 @@ def test_the_fixture_carries_its_planted_defects(bad_paper: Document) -> None:
         assert planted in joined, f"the fixture lost its planted {planted!r}"
 
 
-def test_the_fixture_has_five_reference_entries(bad_paper: Document) -> None:
+def test_the_fixture_bibliography_covers_every_verdict(bad_paper: Document) -> None:
     entries = [c for c in bad_paper.citations if c.in_bibliography]
-    assert [entry.key for entry in entries] == ["1", "2", "3", "4", "5"]
+    # Two invented, one real, one real DOI under a wrong title, one retracted,
+    # one book, and one thesis. The last two exist so the verification pass can
+    # be tested for false fabrication signals on work that is simply unindexed.
+    assert [entry.key for entry in entries] == ["1", "2", "3", "4", "5", "6", "7"]
 
 
 # The harness itself -------------------------------------------------------

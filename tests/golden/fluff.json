@@ -366,8 +366,8 @@
   {
     "advisory": false,
     "char_range": [
-      1590,
-      1600
+      1577,
+      1587
     ],
     "matched_text": "Moreover",
     "note": "Three or more paragraphs in a row opening this way reads as a list of additions rather than an argument. One of them is fine. A run of them is a pattern.",
@@ -380,8 +380,8 @@
   {
     "advisory": false,
     "char_range": [
-      1731,
-      1745
+      1718,
+      1732
     ],
     "matched_text": "Additionally",
     "note": "Three or more paragraphs in a row opening this way reads as a list of additions rather than an argument. One of them is fine. A run of them is a pattern.",
@@ -394,8 +394,8 @@
   {
     "advisory": true,
     "char_range": [
-      2450,
-      2481
+      2437,
+      2468
     ],
     "matched_text": "efficient, scalable, and robust",
     "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
@@ -408,8 +408,8 @@
   {
     "advisory": true,
     "char_range": [
-      2483,
-      2491
+      2470,
+      2478
     ],
     "matched_text": "Not only",
     "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
@@ -422,8 +422,8 @@
   {
     "advisory": true,
     "char_range": [
-      2559,
-      2584
+      2546,
+      2571
     ],
     "matched_text": "simple, fast, and\ngeneral",
     "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
@@ -436,8 +436,8 @@
   {
     "advisory": true,
     "char_range": [
-      2592,
-      2600
+      2579,
+      2587
     ],
     "matched_text": "not only",
     "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
@@ -450,8 +450,8 @@
   {
     "advisory": true,
     "char_range": [
-      2643,
-      2669
+      2630,
+      2656
     ],
     "matched_text": "As will be\ndiscussed later",
     "note": "This promises a discussion later in the paper and names no target, so no reader and no reviewer can check the promise was kept. Point at a section, or drop the sentence.",
@@ -464,8 +464,8 @@
   {
     "advisory": false,
     "char_range": [
-      2942,
-      2956
+      2929,
+      2943
     ],
     "matched_text": "significantly",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -478,8 +478,8 @@
   {
     "advisory": false,
     "char_range": [
-      2956,
-      2971
+      2943,
+      2958
     ],
     "matched_text": "outperforms all",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -492,8 +492,8 @@
   {
     "advisory": false,
     "char_range": [
-      3002,
-      3010
+      2989,
+      2997
     ],
     "matched_text": "the best",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -506,8 +506,8 @@
   {
     "advisory": false,
     "char_range": [
-      3047,
-      3052
+      3034,
+      3039
     ],
     "matched_text": "novel",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -520,8 +520,8 @@
   {
     "advisory": false,
     "char_range": [
-      3066,
-      3080
+      3053,
+      3067
     ],
     "matched_text": "substantially",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -534,8 +534,8 @@
   {
     "advisory": true,
     "char_range": [
-      3848,
-      3905
+      3835,
+      3892
     ],
     "matched_text": "A unified\nframework for adaptive retrieval was presented.",
     "note": "This sentence introduces no word the section's opening sentence did not already carry. It restates rather than concludes, so cutting it loses nothing.",

@@ -1,0 +1,12 @@
+{
+  "body": "{\"meta\": {\"count\": 0, \"db_response_time_ms\": 9, \"page\": 1, \"per_page\": 5, \"groups_count\": null, \"x_query\": {\"oql\": \"works where title has (Benchmark Saturation in Retrieval Evaluation)\", \"oqo\": {\"get_rows\": \"works\", \"filter_rows\": [{\"column_id\": \"display_name.search\", \"value\": \"Benchmark Saturation in Retrieval Evaluation\", \"operator\": \"has\"}]}, \"url\": \"/works?filter=display_name.search:Benchmark Saturation in Retrieval Evaluation&per_page=5\"}, \"cost_usd\": 0.001}, \"results\": [], \"group_by\": []}",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.openalex.org/works?filter=title.search%3ABenchmark+Saturation+in+Retrieval+Evaluation&per-page=5",
+  "source": "openalex",
+  "status": 200,
+  "stored_at": 1786166973.6873453,
+  "stored_at_readable": "2026-08-08T05:29:33+00:00"
+}

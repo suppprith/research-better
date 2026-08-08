@@ -19,6 +19,7 @@ import json
 import os
 import sys
 from collections.abc import Sequence
+from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,7 +27,9 @@ from research_better import __version__
 from research_better.artifacts import ArtifactStore
 from research_better.errors import ResearchBetterError
 from research_better.ingest import load
-from research_better.passes import PASSES, RUN_ORDER, PassResult
+from research_better.model import Document
+from research_better.net import PoliteClient, default_cache
+from research_better.passes import PASSES, RUN_ORDER, PassContext, PassResult
 
 PROGRAM = "research-better"
 
@@ -162,11 +165,10 @@ def _emit(console: Console, name: str, result: PassResult, target: Path) -> None
 
 def _run_one(
     name: str,
-    document: object,
+    context: PassContext,
     store: ArtifactStore,
     console: Console,
     source_hash: str,
-    offline: bool,
 ) -> tuple[int, dict[str, object]]:
     entry = PASSES[name]
     if not entry.implemented or entry.run is None:
@@ -176,8 +178,8 @@ def _run_one(
             f"would look exactly like a check that found nothing wrong."
         )
 
-    result = entry.run(document)  # type: ignore[arg-type]
-    target = store.write(entry.artifact, result.payload, source_hash, offline=offline)
+    result = entry.run(context)
+    target = store.write(entry.artifact, result.payload, source_hash, offline=context.offline)
     _emit(console, name, result, target)
 
     return (
@@ -191,7 +193,7 @@ def _run_one(
     )
 
 
-def _load_document(args: argparse.Namespace) -> object:
+def _load_document(args: argparse.Namespace) -> Document:
     path = Path(args.draft)
     if not path.is_file():
         raise ResearchBetterError(f"{path} does not exist")
@@ -209,7 +211,7 @@ def _load_document(args: argparse.Namespace) -> object:
 
 def run(args: argparse.Namespace, console: Console) -> int:
     document = _load_document(args)
-    source_hash = document.source_hash  # type: ignore[attr-defined]
+    source_hash = document.source_hash
     store = ArtifactStore(Path(args.draft))
 
     for warning in store.stale_warnings(source_hash):
@@ -223,10 +225,30 @@ def run(args: argparse.Namespace, console: Console) -> int:
 
     status = EXIT_CLEAN
     report: list[dict[str, object]] = []
-    for name in names:
-        outcome, entry = _run_one(name, document, store, console, source_hash, args.offline)
-        status = max(status, outcome)
-        report.append(entry)
+    # The client is built only when a pass in this run actually needs one, so a
+    # purely local check never opens a socket or creates a cache directory.
+    needs_network = any(PASSES[name].needs_network for name in names)
+
+    with ExitStack() as resources:
+        client: PoliteClient | None = None
+        if needs_network:
+            client = resources.enter_context(
+                PoliteClient(
+                    default_cache(Path(args.draft)),
+                    offline=args.offline,
+                    refresh=args.refresh,
+                )
+            )
+        context = PassContext(
+            document=document,
+            client=client,
+            offline=args.offline,
+            refresh=args.refresh,
+        )
+        for name in names:
+            outcome, entry = _run_one(name, context, store, console, source_hash)
+            status = max(status, outcome)
+            report.append(entry)
 
     if args.command == "run":
         skipped = [name for name in RUN_ORDER if not PASSES[name].implemented]

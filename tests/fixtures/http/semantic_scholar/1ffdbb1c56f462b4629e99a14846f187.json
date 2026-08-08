@@ -1,0 +1,12 @@
+{
+  "body": "{\"error\":\"Paper with id DOI:10.1145/3591000.3591042 not found\"}\n",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3591000.3591042?fields=title%2Cyear%2Cauthors%2Cabstract%2CexternalIds%2CcitationCount%2Cvenue%2CopenAccessPdf%2CpublicationTypes",
+  "source": "semantic_scholar",
+  "status": 404,
+  "stored_at": 1786167305.825511,
+  "stored_at_readable": "2026-08-08T05:35:05+00:00"
+}

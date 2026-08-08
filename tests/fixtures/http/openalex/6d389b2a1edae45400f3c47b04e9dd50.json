@@ -1,0 +1,12 @@
+{
+  "body": "{\"error\":\"Invalid request rejected at the API edge\",\"error_source\":\"openalex-api-proxy\",\"message\":\"A filter value contains an unescaped comma. Commas separate filters, so a literal comma inside a value must be percent-encoded as %2C (or the whole value wrapped in double quotes). e.g. filter=title.search:climate%2C+biodiversity\"}",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.openalex.org/works?filter=title.search%3AOkonkwo%2C+A&per-page=5",
+  "source": "openalex",
+  "status": 400,
+  "stored_at": 1786166878.467436,
+  "stored_at_readable": "2026-08-08T05:27:58+00:00"
+}

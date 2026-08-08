@@ -1,0 +1,12 @@
+{
+  "body": "{\"paperId\": \"8b65041fc2e6a51414889de24f813d6ca62a91f8\", \"externalIds\": {\"MAG\": \"2117847125\", \"DOI\": \"10.1016/S0140-6736(97)11096-0\", \"CorpusId\": 439791, \"PubMed\": \"9500320\"}, \"title\": \"Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children.\", \"venue\": \"The Lancet\", \"year\": 1998, \"citationCount\": 1879, \"openAccessPdf\": {\"url\": \"\", \"status\": \"CLOSED\", \"license\": null, \"disclaimer\": \"Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1016/S0140-6736(97)11096-0?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/S0140-6736(97)11096-0, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use.\"}, \"publicationTypes\": [\"JournalArticle\", \"Review\"], \"authors\": [{\"authorId\": \"2240628551\", \"name\": \"Denis Wakefield\"}, {\"authorId\": \"2240703263\", \"name\": \"S. Murch\"}, {\"authorId\": \"2355432406\", \"name\": \"A. Anthony\"}, {\"authorId\": \"1394889489\", \"name\": \"J. Linnell\"}, {\"authorId\": \"2420103413\", \"name\": \"D. Casson\"}, {\"authorId\": \"2052343606\", \"name\": \"M. Malik\"}, {\"authorId\": \"2166391468\", \"name\": \"B. FRCPsych\"}, {\"authorId\": \"2420103728\", \"name\": \"AP Dhillon MRCPath\"}, {\"authorId\": \"153224151\", \"name\": \"M. Thomson\"}, {\"authorId\": \"1995815459\", \"name\": \"P. Harvey\"}, {\"authorId\": \"2420103558\", \"name\": \"A. V. Frcr\"}, {\"authorId\": \"2420103627\", \"name\": \"SE Davies MRCPath\"}, {\"authorId\": \"1404554336\", \"name\": \"J. Walker-smith\"}], \"abstract\": null}\n",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "request": "GET https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/s0140-6736(97)11096-0?fields=title%2Cyear%2Cauthors%2Cabstract%2CexternalIds%2CcitationCount%2Cvenue%2CopenAccessPdf%2CpublicationTypes",
+  "source": "semantic_scholar",
+  "status": 200,
+  "stored_at": 1786167335.8711295,
+  "stored_at_readable": "2026-08-08T05:35:35+00:00"
+}

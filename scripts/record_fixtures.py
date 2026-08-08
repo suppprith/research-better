@@ -24,6 +24,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
+from research_better.grounding import bibliography  # noqa: E402
+from research_better.ingest import load  # noqa: E402
 from research_better.net import HttpCache, PoliteClient, resolve_contact  # noqa: E402
 from research_better.sources import (  # noqa: E402
     ArxivAdapter,
@@ -33,6 +35,7 @@ from research_better.sources import (  # noqa: E402
 )
 
 FIXTURE_CACHE = REPO / "tests" / "fixtures" / "http"
+BAD_PAPER = REPO / "tests" / "fixtures" / "bad-paper.md"
 
 # Chosen to cover the cases the verification tests need: a real and heavily
 # cited paper, a real paper whose title is commonly mis-cited, a retracted
@@ -70,6 +73,19 @@ def record(refresh: bool) -> int:
     )
 
     with PoliteClient(cache, contact=contact, refresh=refresh) as client:
+        # Whatever the fixture paper's bibliography asks for has to be here, or
+        # the verification tests would silently fall back to the network.
+        for entry in bibliography(load(BAD_PAPER).citations):
+            for adapter in (openalex, crossref, semantic, arxiv):
+                try:
+                    if entry.doi:
+                        adapter.by_doi(client, entry.doi)
+                    elif entry.title:
+                        adapter.by_title(client, entry.title)
+                except Exception as error:
+                    print(f"  {adapter.name} for [{entry.key}]: {type(error).__name__}: {error}")
+            print(f"  bibliography [{entry.key}]: {(entry.title or entry.raw)[:56]}")
+
         plan = [
             ("openalex by_doi real", lambda: openalex.by_doi(client, REAL_DOI)),
             ("crossref by_doi real", lambda: crossref.by_doi(client, REAL_DOI)),

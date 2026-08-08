@@ -1,0 +1,12 @@
+{
+  "body": "Resource not found.",
+  "body_encoding": "utf-8",
+  "headers": {
+    "content-type": "text/plain"
+  },
+  "request": "GET https://api.crossref.org/works/10.1145/3591000.3591042?",
+  "source": "crossref",
+  "status": 404,
+  "stored_at": 1786166861.9406836,
+  "stored_at_readable": "2026-08-08T05:27:41+00:00"
+}

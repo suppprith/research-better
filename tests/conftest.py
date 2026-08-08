@@ -18,6 +18,7 @@ from golden_harness import Golden
 from research_better.builder import DocumentBuilder
 from research_better.ingest import load
 from research_better.model import Document
+from research_better.net import HttpCache, PoliteClient
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BAD_PAPER = FIXTURES / "bad-paper.md"
@@ -55,6 +56,38 @@ def _build(text: str) -> Document:
 @pytest.fixture
 def build_document() -> BuildDocument:
     return _build
+
+
+FIXTURE_HTTP = FIXTURES / "http"
+
+
+@pytest.fixture(autouse=True)
+def never_reach_the_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Point every code path that builds a cache at the recorded fixtures.
+
+    Autouse and unconditional. Without it, a CLI test that runs the grounding
+    pass would query four live APIs, and the suite would be slow, flaky, and
+    rude to services that are free. `ignore_ttl` keeps a six-month-old fixture
+    from expiring and turning the suite red for a reason unrelated to the code.
+
+    Tests that want live APIs mark themselves `@pytest.mark.network` and are
+    excluded from the default run.
+    """
+    import research_better.cli
+
+    monkeypatch.setattr(
+        research_better.cli,
+        "default_cache",
+        lambda _draft: HttpCache(FIXTURE_HTTP, ignore_ttl=True),
+    )
+
+    def offline_client(cache, **options):
+        # Forced offline, not merely cached. A cache miss then raises where a
+        # test can see it, instead of quietly going out to four live APIs and
+        # making the suite slow and flaky.
+        return PoliteClient(cache, **{**options, "offline": True})
+
+    monkeypatch.setattr(research_better.cli, "PoliteClient", offline_client)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

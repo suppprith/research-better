@@ -23,12 +23,31 @@ WHITESPACE = re.compile(r"\s+")
 RETRACTED_PREFIX = re.compile(r"^\s*(?:retracted|withdrawn)\b[:\s]*", re.IGNORECASE)
 
 
+def trim_doi(raw: str) -> str:
+    """Cut trailing punctuation off a DOI without cutting into the DOI.
+
+    Elsevier DOIs contain parentheses, as in `10.1016/S0140-6736(97)11096-0`, so
+    a pattern that stops at the first bracket truncates them. This takes the
+    permissive match and walks back from the end while the last character is
+    punctuation that cannot end a DOI, or is a closing bracket with no opener.
+    """
+    trimmed = raw.strip()
+    while trimmed:
+        last = trimmed[-1]
+        unbalanced = (last == ")" and trimmed.count("(") < trimmed.count(")")) or (
+            last == "]" and trimmed.count("[") < trimmed.count("]")
+        )
+        if last not in ".,;:" and not unbalanced:
+            break
+        trimmed = trimmed[:-1]
+    return trimmed
+
+
 def normalize_doi(value: str | None) -> str | None:
     """Strip the many ways a DOI gets written down to the bare identifier."""
     if not value:
         return None
-    bare = DOI_PREFIX.sub("", value.strip()).strip().rstrip(".,;")
-    return bare.lower() or None
+    return trim_doi(DOI_PREFIX.sub("", value.strip())).lower() or None
 
 
 def normalize_arxiv(value: str | None) -> str | None:

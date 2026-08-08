@@ -54,7 +54,7 @@
     }
   ],
   "whole_paper": {
-    "citations_per_paragraph": 0.33,
+    "citations_per_paragraph": 0.4,
     "connectives": [
       [
         "moreover",
@@ -91,10 +91,10 @@
     "scope": "whole_paper",
     "sentence_lengths": {
       "count": 45,
-      "mean": 12.64,
+      "mean": 12.6,
       "p10": 8.0,
       "p90": 22.0,
-      "stdev": 5.71
+      "stdev": 5.67
     },
     "spelling": "british",
     "terminology": [
@@ -323,6 +323,6 @@
         1
       ]
     ],
-    "word_count": 561
+    "word_count": 558
   }
 }

@@ -18,6 +18,10 @@
     },
     {
       "in_bibliography": false,
+      "key": "5"
+    },
+    {
+      "in_bibliography": false,
       "key": "2"
     },
     {
@@ -39,6 +43,14 @@
     {
       "in_bibliography": true,
       "key": "5"
+    },
+    {
+      "in_bibliography": true,
+      "key": "6"
+    },
+    {
+      "in_bibliography": true,
+      "key": "7"
     }
   ],
   "floats": [
@@ -65,6 +77,14 @@
     {
       "kind": "bibliography",
       "label": "5"
+    },
+    {
+      "kind": "bibliography",
+      "label": "6"
+    },
+    {
+      "kind": "bibliography",
+      "label": "7"
     }
   ],
   "metadata": {
@@ -178,9 +198,9 @@
       "text": "Furthermore, the question of evaluation has been raised repeatedly [4]."
     },
     {
-      "id": "s-cbf2a8549cf0",
+      "id": "s-3805e595adbe",
       "section": "sec-75d1e5190632",
-      "text": "The\nretracted analysis of Vogel and Prasad remains widely cited despite its\nwithdrawal, and its conclusions continue to circulate."
+      "text": "The\nretracted analysis in [5] remains widely cited despite its withdrawal, and its\nconclusions continue to circulate."
     },
     {
       "id": "s-fffd5c6e64ce",

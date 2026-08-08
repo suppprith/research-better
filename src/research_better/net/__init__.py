@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from research_better.net.cache import CacheEntry, HttpCache, cache_key, normalize_request
 from research_better.net.client import (
+    CACHE_ENVIRONMENT_VARIABLE,
     CONTACT_ENVIRONMENT_VARIABLE,
     OfflineCacheMissError,
     PoliteClient,
@@ -21,6 +22,7 @@ from research_better.net.client import (
 from research_better.net.limits import Limits, LimitsError, SourceLimit, TokenBucket, load_limits
 
 __all__ = [
+    "CACHE_ENVIRONMENT_VARIABLE",
     "CONTACT_ENVIRONMENT_VARIABLE",
     "CacheEntry",
     "HttpCache",

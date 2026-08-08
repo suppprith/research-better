@@ -260,8 +260,22 @@ class PoliteClient:
         return sorted(results, key=lambda row: row[0])
 
 
+CACHE_ENVIRONMENT_VARIABLE = "RESEARCH_BETTER_CACHE"
+
+
 def default_cache(draft: Path) -> HttpCache:
-    """The cache that sits beside a draft, inside its artifact directory."""
+    """The cache that sits beside a draft, inside its artifact directory.
+
+    `RESEARCH_BETTER_CACHE` moves it somewhere shared. Worth setting if you
+    check several papers that cite the same literature, since a resolved DOI is
+    the same answer for all of them and re-fetching it is waste on both ends.
+    It is also how the test suite points at recorded fixtures.
+    """
+    import os
+
     from research_better.artifacts import ArtifactStore
 
+    override = os.environ.get(CACHE_ENVIRONMENT_VARIABLE)
+    if override:
+        return HttpCache(Path(override))
     return HttpCache(ArtifactStore(draft).cache)

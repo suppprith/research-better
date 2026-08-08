@@ -108,13 +108,13 @@ def test_an_artifact_records_the_hash_of_the_draft_it_came_from(draft: Path) -> 
 def test_an_unbuilt_pass_refuses_rather_than_writing_an_empty_artifact(
     draft: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert main(["ground", str(draft), "--quiet"]) == EXIT_ERROR
+    assert main(["novelty", str(draft), "--quiet"]) == EXIT_ERROR
     message = capsys.readouterr().err
     assert "not built yet" in message
-    assert "P3" in message
-    # An empty grounding.json looks exactly like a grounding check that found
+    assert "P4" in message
+    # An empty novelty.json looks exactly like a novelty audit that found
     # nothing wrong, which is the false assurance this tool must not give.
-    assert not ArtifactStore(draft).path_for("grounding").exists()
+    assert not ArtifactStore(draft).path_for("novelty").exists()
 
 
 @pytest.mark.parametrize("name", sorted(n for n, p in PASSES.items() if not p.implemented))
@@ -131,7 +131,7 @@ def test_run_says_which_passes_did_not_run(draft: Path, capsys: pytest.CaptureFi
     # Silence about an unrun pass reads as a clean result. Same commitment as
     # never printing a total score.
     assert "not checked" in output
-    for name in ("novelty", "ground", "ask", "edit", "report"):
+    for name in ("novelty", "ask", "edit", "report"):
         assert name in output
 
 

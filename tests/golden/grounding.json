@@ -1,0 +1,174 @@
+{
+  "checks": [
+    {
+      "author_score": 0.0,
+      "entry_title": "Adaptive Query Expansion Under Drift",
+      "entry_year": 2023,
+      "key": "1",
+      "likely_unindexed": false,
+      "matched_doi": null,
+      "matched_title": null,
+      "matched_year": null,
+      "note": "No record found in the sources queried. That is not proof the work does not exist. Books, theses, standards, older non-English work, and some workshop papers are not indexed. Check it yourself before concluding anything.",
+      "raw": "[1] Ferreira, L. and Osei, N. Adaptive Query Expansion Under Drift. Journal of\n    Information Retrieval, 2023. https://doi.org/10.1145/3591000.3591042",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "medium",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 0.0,
+      "verdict": "NOT_FOUND"
+    },
+    {
+      "author_score": 1.0,
+      "entry_title": "The Probabilistic Relevance Framework: BM25 and Beyond",
+      "entry_year": 2009,
+      "key": "2",
+      "likely_unindexed": false,
+      "matched_doi": "10.1561/1500000019",
+      "matched_title": "The Probabilistic Relevance Framework: BM25 and Beyond",
+      "matched_year": 2009,
+      "note": "Resolves, and the title, authors, and year match.",
+      "raw": "[2] Robertson, S. and Zaragoza, H. The Probabilistic Relevance Framework:\n    BM25 and Beyond. Foundations and Trends in Information Retrieval, 2009.\n    https://doi.org/10.1561/1500000019",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "none",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 1.0,
+      "verdict": "VERIFIED"
+    },
+    {
+      "author_score": 1.0,
+      "entry_title": "A Complete Survey of Dense Retrieval Methods",
+      "entry_year": 2020,
+      "key": "3",
+      "likely_unindexed": false,
+      "matched_doi": "10.18653/v1/2020.emnlp-main.550",
+      "matched_title": "Dense Passage Retrieval for Open-Domain Question Answering",
+      "matched_year": 2020,
+      "note": "The record for this identifier is titled 'Dense Passage Retrieval for Open-Domain Question Answering', which does not match the entry (similarity 0.41 against a 0.85 threshold). Usually a copy-paste error. Check what you meant to cite.",
+      "raw": "[3] Karpukhin, V. and Oguz, B. A Complete Survey of Dense Retrieval Methods.\n    EMNLP, 2020. https://doi.org/10.18653/v1/2020.emnlp-main.550",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "high",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 0.412,
+      "verdict": "TITLE_MISMATCH"
+    },
+    {
+      "author_score": 0.0,
+      "entry_title": "Benchmark Saturation in Retrieval Evaluation",
+      "entry_year": 2024,
+      "key": "4",
+      "likely_unindexed": false,
+      "matched_doi": null,
+      "matched_title": null,
+      "matched_year": null,
+      "note": "No record found in the sources queried. That is not proof the work does not exist. Books, theses, standards, older non-English work, and some workshop papers are not indexed. Check it yourself before concluding anything.",
+      "raw": "[4] Marchetti, D. and Sowande, A. Benchmark Saturation in Retrieval Evaluation.\n    Proceedings of the International Conference on Search Systems, 2024.",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "medium",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 0.0,
+      "verdict": "NOT_FOUND"
+    },
+    {
+      "author_score": 1.0,
+      "entry_title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
+      "entry_year": 1998,
+      "key": "5",
+      "likely_unindexed": false,
+      "matched_doi": "10.1016/s0140-6736(97)11096-0",
+      "matched_title": "RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children",
+      "matched_year": 1998,
+      "note": "This work has been retracted. See the retraction notice at 10.1016/s0140-6736(10)60175-4. Citing it may still be correct if you are discussing the retraction, but it should not be cited as a source of findings.",
+      "raw": "[5] Wakefield, A. J. and Murch, S. H. Ileal-lymphoid-nodular hyperplasia,\n    non-specific colitis, and pervasive developmental disorder in children.\n    The Lancet, 1998. https://doi.org/10.1016/S0140-6736(97)11096-0",
+      "retraction_date": "2010-2-6",
+      "retraction_doi": "10.1016/s0140-6736(10)60175-4",
+      "severity": "high",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 1.0,
+      "verdict": "RETRACTED"
+    },
+    {
+      "author_score": 1.0,
+      "entry_title": "Introduction to Information Retrieval",
+      "entry_year": 2008,
+      "key": "6",
+      "likely_unindexed": false,
+      "matched_doi": "10.5860/choice.46-2715",
+      "matched_title": "Introduction to information retrieval",
+      "matched_year": 2008,
+      "note": "Resolves, and the title, authors, and year match.",
+      "raw": "[6] Manning, C. D., Raghavan, P., and Schutze, H. Introduction to Information\n    Retrieval. Cambridge University Press, 2008.",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "none",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 1.0,
+      "verdict": "VERIFIED"
+    },
+    {
+      "author_score": 0.0,
+      "entry_title": "Ranking Under Budget Constraints",
+      "entry_year": 2017,
+      "key": "7",
+      "likely_unindexed": true,
+      "matched_doi": null,
+      "matched_title": null,
+      "matched_year": null,
+      "note": "No record found. This entry looks like a thesis, and these are routinely absent from OpenAlex, Crossref, and arXiv even when they are entirely real. Absence here is not evidence.",
+      "raw": "[7] Okonkwo, A. Ranking Under Budget Constraints. PhD thesis, University of\n    Nowhere, 2017.",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "medium",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 0.0,
+      "verdict": "NOT_FOUND"
+    }
+  ],
+  "coverage_note": "2 of 7 entries resolved and matched. queried arxiv, crossref, openalex.",
+  "sources_queried": [
+    "arxiv",
+    "crossref",
+    "openalex"
+  ],
+  "sources_unavailable": {},
+  "total": 7,
+  "verified": 2
+}
