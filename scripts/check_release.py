@@ -26,13 +26,30 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src"))
-
-from research_better import __version__  # noqa: E402
 
 CHANGELOG = ROOT / "CHANGELOG.md"
 PLUGIN = ROOT / ".claude-plugin" / "plugin.json"
 SKILL = ROOT / "SKILL.md"
+PACKAGE = ROOT / "src" / "research_better" / "__init__.py"
+
+VERSION = re.compile(r'^__version__\s*=\s*"([^"]+)"', re.MULTILINE)
+
+
+def package_version() -> str:
+    """Read the version out of the file rather than importing the package.
+
+    Importing it would pull in httpx, and this runs first in the release
+    workflow, before anything is installed. That ordering is the point: these
+    checks are the cheap ones and they have to be able to run on a machine with
+    nothing on it. Hatch reads the same line the same way.
+    """
+    found = VERSION.search(PACKAGE.read_text(encoding="utf-8"))
+    if found is None:
+        raise SystemExit(f"no __version__ in {PACKAGE}")
+    return found.group(1)
+
+
+__version__ = package_version()
 
 SECTION = re.compile(r"^##\s+\[?(?P<version>[0-9][^\]\s]*)\]?", re.MULTILINE)
 

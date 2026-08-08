@@ -168,6 +168,21 @@ def test_the_changelog_keeps_an_unreleased_section() -> None:
     assert "## Unreleased" in CHANGELOG.read_text(encoding="utf-8")
 
 
+def test_the_release_check_needs_nothing_installed() -> None:
+    """It reads the version out of the file rather than importing the package.
+
+    It runs first in the release workflow, before anything is installed, and
+    that ordering is the point: these are the cheap checks and they have to run
+    on a machine with nothing on it. Importing the package pulled in httpx and
+    failed the first real release.
+    """
+    source = (SCRIPTS / "check_release.py").read_text(encoding="utf-8")
+    assert "from research_better import" not in source
+
+    check = load_script("check_release")
+    assert check.package_version() == research_better.__version__
+
+
 # The release workflow --------------------------------------------------------
 
 
