@@ -153,6 +153,16 @@
       "text": "We also present a seamless framework that leverages\nthis result and delivers state-of-the-art performance."
     },
     {
+      "id": "s-32f78cd26489",
+      "section": "sec-6a9214104d22",
+      "text": "The remainder of the\npaper describes the method and reports experimental results on three retrieval\nbenchmarks."
+    },
+    {
+      "id": "s-90035d5db259",
+      "section": "sec-6a9214104d22",
+      "text": "We release the index configuration and the evaluation scripts\nalongside the paper."
+    },
+    {
       "id": "s-6627ecc473c0",
       "section": "sec-75d1e5190632",
       "text": "Sparse retrieval has a long history in the literature [2]."

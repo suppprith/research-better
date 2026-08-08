@@ -1,0 +1,328 @@
+{
+  "minimum_section_words": 150,
+  "sections": [
+    {
+      "citations_per_paragraph": 0.33,
+      "connectives": [],
+      "hedges_per_hundred_words": 4.85,
+      "hyphenation": [
+        [
+          "stateoftheart",
+          "state-of-the-art"
+        ]
+      ],
+      "label": "Introduction",
+      "oxford_comma": "unknown",
+      "passive_ratio": 0.222,
+      "person": "we",
+      "scope": "sec-6a9214104d22",
+      "sentence_lengths": {
+        "count": 9,
+        "mean": 18.44,
+        "p10": 12.0,
+        "p90": 27.0,
+        "stdev": 6.41
+      },
+      "spelling": "british",
+      "terminology": [
+        [
+          "retrieval",
+          3
+        ],
+        [
+          "adaptive",
+          2
+        ],
+        [
+          "methods",
+          2
+        ],
+        [
+          "paper",
+          2
+        ],
+        [
+          "results",
+          2
+        ],
+        [
+          "state-of-the-art",
+          1
+        ]
+      ],
+      "word_count": 165
+    }
+  ],
+  "whole_paper": {
+    "citations_per_paragraph": 0.33,
+    "connectives": [
+      [
+        "moreover",
+        2
+      ],
+      [
+        "furthermore",
+        1
+      ]
+    ],
+    "hedges_per_hundred_words": 1.43,
+    "hyphenation": [
+      [
+        "firstpass",
+        "first-pass"
+      ],
+      [
+        "longtail",
+        "long-tail"
+      ],
+      [
+        "stateoftheart",
+        "state-of-the-art"
+      ],
+      [
+        "wallclock",
+        "wall-clock"
+      ]
+    ],
+    "label": "(whole paper)",
+    "oxford_comma": "always",
+    "passive_ratio": 0.267,
+    "person": "we",
+    "scope": "whole_paper",
+    "sentence_lengths": {
+      "count": 45,
+      "mean": 12.64,
+      "p10": 8.0,
+      "p90": 22.0,
+      "stdev": 5.71
+    },
+    "spelling": "british",
+    "terminology": [
+      [
+        "retrieval",
+        7
+      ],
+      [
+        "adaptive",
+        4
+      ],
+      [
+        "queries",
+        4
+      ],
+      [
+        "results",
+        4
+      ],
+      [
+        "adaptive retrieval",
+        3
+      ],
+      [
+        "design",
+        3
+      ],
+      [
+        "framework",
+        3
+      ],
+      [
+        "method",
+        3
+      ],
+      [
+        "Additionally",
+        2
+      ],
+      [
+        "Moreover",
+        2
+      ],
+      [
+        "analysis",
+        2
+      ],
+      [
+        "authors",
+        2
+      ],
+      [
+        "configuration",
+        2
+      ],
+      [
+        "corpus",
+        2
+      ],
+      [
+        "delivers",
+        2
+      ],
+      [
+        "evaluation",
+        2
+      ],
+      [
+        "expansion",
+        2
+      ],
+      [
+        "formal",
+        2
+      ],
+      [
+        "frequency",
+        2
+      ],
+      [
+        "gain",
+        2
+      ],
+      [
+        "grown",
+        2
+      ],
+      [
+        "index",
+        2
+      ],
+      [
+        "indexes",
+        2
+      ],
+      [
+        "latency",
+        2
+      ],
+      [
+        "later",
+        2
+      ],
+      [
+        "literature",
+        2
+      ],
+      [
+        "methods",
+        2
+      ],
+      [
+        "one",
+        2
+      ],
+      [
+        "paper",
+        2
+      ],
+      [
+        "presented",
+        2
+      ],
+      [
+        "query",
+        2
+      ],
+      [
+        "question",
+        2
+      ],
+      [
+        "ranking",
+        2
+      ],
+      [
+        "recall",
+        2
+      ],
+      [
+        "remains",
+        2
+      ],
+      [
+        "search",
+        2
+      ],
+      [
+        "since",
+        2
+      ],
+      [
+        "three",
+        2
+      ],
+      [
+        "unified",
+        2
+      ],
+      [
+        "unified framework",
+        2
+      ],
+      [
+        "using",
+        2
+      ],
+      [
+        "work",
+        2
+      ],
+      [
+        "BM25",
+        1
+      ],
+      [
+        "Dense",
+        1
+      ],
+      [
+        "Expansion",
+        1
+      ],
+      [
+        "Many",
+        1
+      ],
+      [
+        "Recall",
+        1
+      ],
+      [
+        "Search",
+        1
+      ],
+      [
+        "Several",
+        1
+      ],
+      [
+        "dense",
+        1
+      ],
+      [
+        "first-pass",
+        1
+      ],
+      [
+        "long-tail",
+        1
+      ],
+      [
+        "many",
+        1
+      ],
+      [
+        "several",
+        1
+      ],
+      [
+        "state-of-the-art",
+        1
+      ],
+      [
+        "wall-clock",
+        1
+      ]
+    ],
+    "word_count": 561
+  }
+}

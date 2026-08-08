@@ -20,7 +20,10 @@ crucial nature of the problem.
 
 Our primary contribution is a formal proof that adaptive retrieval converges
 under bounded query drift. We also present a seamless framework that leverages
-this result and delivers state-of-the-art performance.
+this result and delivers state-of-the-art performance. The remainder of the
+paper describes the method and reports experimental results on three retrieval
+benchmarks. We release the index configuration and the evaluation scripts
+alongside the paper.
 
 # Related Work
 

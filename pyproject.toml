@@ -72,6 +72,10 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 # SIM905 would turn the readable stopword block into one 700-character list
 # literal. The split form is the maintainable one here.
 "src/research_better/fluff/structural.py" = ["SIM905"]
+# Same reason for the stopword and participle blocks. RUF001 fires on the curly
+# apostrophe in the word pattern, which real papers contain and which the
+# tokenizer therefore has to accept.
+"src/research_better/voice.py" = ["SIM905", "RUF001"]
 
 [tool.mypy]
 python_version = "3.11"
