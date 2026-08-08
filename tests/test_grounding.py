@@ -208,7 +208,7 @@ def test_coverage_is_a_count_not_a_share(bad_paper, client, adapters) -> None:
     # A share would read as a score for the bibliography, and this tool does
     # not issue scores.
     assert "%" not in note
-    assert "of 7 entries resolved" in note
+    assert "of 8 entries resolved" in note
     assert "queried" in note
 
 

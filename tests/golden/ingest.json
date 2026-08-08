@@ -22,6 +22,14 @@
     },
     {
       "in_bibliography": false,
+      "key": "8"
+    },
+    {
+      "in_bibliography": false,
+      "key": "8"
+    },
+    {
+      "in_bibliography": false,
       "key": "2"
     },
     {
@@ -51,6 +59,10 @@
     {
       "in_bibliography": true,
       "key": "7"
+    },
+    {
+      "in_bibliography": true,
+      "key": "8"
     }
   ],
   "floats": [
@@ -85,6 +97,10 @@
     {
       "kind": "bibliography",
       "label": "7"
+    },
+    {
+      "kind": "bibliography",
+      "label": "8"
     }
   ],
   "metadata": {
@@ -221,6 +237,16 @@
       "id": "s-94118bb4905c",
       "section": "sec-75d1e5190632",
       "text": "Few of these studies\nagree on what counts as a successful replication."
+    },
+    {
+      "id": "s-0a8e9fb90ce9",
+      "section": "sec-75d1e5190632",
+      "text": "Hierarchical indexing keeps the resident footprint independent of corpus size\n[8]."
+    },
+    {
+      "id": "s-8cee82dce739",
+      "section": "sec-75d1e5190632",
+      "text": "Hierarchical indexing recovers the exhaustive result score at billion\ndocument scale [8]."
     },
     {
       "id": "s-2a3966b33e1e",

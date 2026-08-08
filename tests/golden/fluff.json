@@ -394,8 +394,8 @@
   {
     "advisory": true,
     "char_range": [
-      2437,
-      2468
+      2611,
+      2642
     ],
     "matched_text": "efficient, scalable, and robust",
     "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
@@ -408,8 +408,8 @@
   {
     "advisory": true,
     "char_range": [
-      2470,
-      2478
+      2644,
+      2652
     ],
     "matched_text": "Not only",
     "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
@@ -422,8 +422,8 @@
   {
     "advisory": true,
     "char_range": [
-      2546,
-      2571
+      2720,
+      2745
     ],
     "matched_text": "simple, fast, and\ngeneral",
     "note": "This section uses 2 three-item lists. One is a stylistic choice. Several is a cadence, and a reader starts hearing the pattern instead of the argument.",
@@ -436,8 +436,8 @@
   {
     "advisory": true,
     "char_range": [
-      2579,
-      2587
+      2753,
+      2761
     ],
     "matched_text": "not only",
     "note": "A balanced two-part template. One is a stylistic choice. Several in one section is a cadence rather than an argument, and it is one of the patterns that makes text read as generated.",
@@ -450,8 +450,8 @@
   {
     "advisory": true,
     "char_range": [
-      2630,
-      2656
+      2804,
+      2830
     ],
     "matched_text": "As will be\ndiscussed later",
     "note": "This promises a discussion later in the paper and names no target, so no reader and no reviewer can check the promise was kept. Point at a section, or drop the sentence.",
@@ -464,8 +464,8 @@
   {
     "advisory": false,
     "char_range": [
-      2929,
-      2943
+      3103,
+      3117
     ],
     "matched_text": "significantly",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -478,8 +478,8 @@
   {
     "advisory": false,
     "char_range": [
-      2943,
-      2958
+      3117,
+      3132
     ],
     "matched_text": "outperforms all",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -492,8 +492,8 @@
   {
     "advisory": false,
     "char_range": [
-      2989,
-      2997
+      3163,
+      3171
     ],
     "matched_text": "the best",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -506,8 +506,8 @@
   {
     "advisory": false,
     "char_range": [
-      3034,
-      3039
+      3208,
+      3213
     ],
     "matched_text": "novel",
     "note": "A reviewer will ask what this is measured against. Either cite the comparison or drop the claim. Deleting the word alone would leave the sentence broken, so this one goes to you.",
@@ -520,8 +520,8 @@
   {
     "advisory": false,
     "char_range": [
-      3053,
-      3067
+      3227,
+      3241
     ],
     "matched_text": "substantially",
     "note": "This adverb claims a magnitude with no number and no citation behind it. Deleting it costs the sentence nothing and removes a claim you cannot defend.",
@@ -534,8 +534,8 @@
   {
     "advisory": true,
     "char_range": [
-      3835,
-      3892
+      4009,
+      4066
     ],
     "matched_text": "A unified\nframework for adaptive retrieval was presented.",
     "note": "This sentence introduces no word the section's opening sentence did not already carry. It restates rather than concludes, so cutting it loses nothing.",

@@ -77,6 +77,7 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 # tokenizer therefore has to accept.
 "src/research_better/voice.py" = ["SIM905", "RUF001"]
 "src/research_better/sources/merge.py" = ["SIM905"]
+"src/research_better/grounding/claims.py" = ["SIM905"]
 
 [tool.mypy]
 python_version = "3.11"

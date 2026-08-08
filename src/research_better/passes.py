@@ -99,14 +99,20 @@ def _voice(context: PassContext) -> PassResult:
 
 
 def _ground(context: PassContext) -> PassResult:
-    report = grounding.analyse(context.document, context.require_client("ground"))
-    findings = grounding.to_findings(context.document, report)
+    client = context.require_client("ground")
+    report = grounding.analyse(context.document, client)
+    claims = grounding.check_claims(context.document, client)
+    findings = grounding.to_findings(context.document, report, claims)
     return PassResult(
-        payload=report.to_json(),
+        payload={"citations": report.to_json(), "claims": claims.to_json()},
         findings=tuple(findings),
         # The summary says what was checked, not how clean the paper is. A
         # count of resolved entries is a fact. A share would read as a score.
-        summary=f"{report.verified} of {len(report.checks)} entries resolved and matched",
+        summary=(
+            f"{report.verified} of {len(report.checks)} entries resolved, "
+            f"{claims.sources_with_full_text} of {claims.sources_attempted} sources "
+            f"had full text"
+        ),
     )
 
 

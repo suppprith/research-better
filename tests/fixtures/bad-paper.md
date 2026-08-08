@@ -40,6 +40,10 @@ authors have argued that saturation makes comparison meaningless.
 Additionally, reproducibility work has grown in volume. Few of these studies
 agree on what counts as a successful replication.
 
+Hierarchical indexing keeps the resident footprint independent of corpus size
+[8]. Hierarchical indexing recovers the exhaustive result score at billion
+document scale [8].
+
 Search engines are used by billions of people every day. The web has grown
 enormously over the past three decades. Indexing at that scale requires
 substantial engineering effort.
@@ -109,3 +113,6 @@ framework for adaptive retrieval was presented.
 
 [7] Okonkwo, A. Ranking Under Budget Constraints. PhD thesis, University of
     Nowhere, 2017.
+
+[8] Deshpande, U. and Sundararaman, S. Hierarchical BM25: Lexical Search at
+    Billion-Document Scale. arXiv:2608.00229, 2026.

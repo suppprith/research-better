@@ -104,9 +104,11 @@ def test_the_fixture_carries_its_planted_defects(bad_paper: Document) -> None:
 def test_the_fixture_bibliography_covers_every_verdict(bad_paper: Document) -> None:
     entries = [c for c in bad_paper.citations if c.in_bibliography]
     # Two invented, one real, one real DOI under a wrong title, one retracted,
-    # one book, and one thesis. The last two exist so the verification pass can
-    # be tested for false fabrication signals on work that is simply unindexed.
-    assert [entry.key for entry in entries] == ["1", "2", "3", "4", "5", "6", "7"]
+    # one book, one thesis, and one with retrievable full text. The book and
+    # thesis exist so the verification pass can be tested for false fabrication
+    # signals on work that is simply unindexed. The last is what claim support
+    # is checked against.
+    assert [entry.key for entry in entries] == ["1", "2", "3", "4", "5", "6", "7", "8"]
 
 
 # The harness itself -------------------------------------------------------

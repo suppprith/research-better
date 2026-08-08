@@ -54,7 +54,7 @@
     }
   ],
   "whole_paper": {
-    "citations_per_paragraph": 0.4,
+    "citations_per_paragraph": 0.5,
     "connectives": [
       [
         "moreover",
@@ -65,7 +65,7 @@
         1
       ]
     ],
-    "hedges_per_hundred_words": 1.43,
+    "hedges_per_hundred_words": 1.38,
     "hyphenation": [
       [
         "firstpass",
@@ -86,15 +86,15 @@
     ],
     "label": "(whole paper)",
     "oxford_comma": "always",
-    "passive_ratio": 0.267,
+    "passive_ratio": 0.255,
     "person": "we",
     "scope": "whole_paper",
     "sentence_lengths": {
-      "count": 45,
-      "mean": 12.6,
+      "count": 47,
+      "mean": 12.55,
       "p10": 8.0,
-      "p90": 22.0,
-      "stdev": 5.67
+      "p90": 21.0,
+      "stdev": 5.55
     },
     "spelling": "british",
     "terminology": [
@@ -119,6 +119,10 @@
         3
       ],
       [
+        "corpus",
+        3
+      ],
+      [
         "design",
         3
       ],
@@ -132,6 +136,14 @@
       ],
       [
         "Additionally",
+        2
+      ],
+      [
+        "Hierarchical",
+        2
+      ],
+      [
+        "Hierarchical indexing",
         2
       ],
       [
@@ -151,11 +163,11 @@
         2
       ],
       [
-        "corpus",
+        "delivers",
         2
       ],
       [
-        "delivers",
+        "document",
         2
       ],
       [
@@ -188,6 +200,10 @@
       ],
       [
         "indexes",
+        2
+      ],
+      [
+        "indexing",
         2
       ],
       [
@@ -239,6 +255,14 @@
         2
       ],
       [
+        "result",
+        2
+      ],
+      [
+        "scale",
+        2
+      ],
+      [
         "search",
         2
       ],
@@ -276,6 +300,10 @@
       ],
       [
         "Expansion",
+        1
+      ],
+      [
+        "Indexing",
         1
       ],
       [
@@ -323,6 +351,6 @@
         1
       ]
     ],
-    "word_count": 558
+    "word_count": 579
   }
 }

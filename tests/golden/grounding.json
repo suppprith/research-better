@@ -160,15 +160,38 @@
       "sources_unavailable": {},
       "title_score": 0.0,
       "verdict": "NOT_FOUND"
+    },
+    {
+      "author_score": 1.0,
+      "entry_title": "Hierarchical BM25: Lexical Search at Billion-Document Scale",
+      "entry_year": 2026,
+      "key": "8",
+      "likely_unindexed": false,
+      "matched_doi": "10.48550/arxiv.2608.00229",
+      "matched_title": "Hierarchical BM25: Lexical Search at Billion-Document Scale",
+      "matched_year": 2026,
+      "note": "Resolves, and the title, authors, and year match.",
+      "raw": "[8] Deshpande, U. and Sundararaman, S. Hierarchical BM25: Lexical Search at\n    Billion-Document Scale. arXiv:2608.00229, 2026.",
+      "retraction_date": null,
+      "retraction_doi": null,
+      "severity": "none",
+      "sources_queried": [
+        "arxiv",
+        "crossref",
+        "openalex"
+      ],
+      "sources_unavailable": {},
+      "title_score": 1.0,
+      "verdict": "VERIFIED"
     }
   ],
-  "coverage_note": "2 of 7 entries resolved and matched. queried arxiv, crossref, openalex.",
+  "coverage_note": "3 of 8 entries resolved and matched. queried arxiv, crossref, openalex.",
   "sources_queried": [
     "arxiv",
     "crossref",
     "openalex"
   ],
   "sources_unavailable": {},
-  "total": 7,
-  "verified": 2
+  "total": 8,
+  "verified": 3
 }

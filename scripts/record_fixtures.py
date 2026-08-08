@@ -24,7 +24,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from research_better.grounding import bibliography  # noqa: E402
+from research_better.grounding import bibliography, check_claims  # noqa: E402
 from research_better.ingest import load  # noqa: E402
 from research_better.net import HttpCache, PoliteClient, resolve_contact  # noqa: E402
 from research_better.sources import (  # noqa: E402
@@ -85,6 +85,15 @@ def record(refresh: bool) -> int:
                 except Exception as error:
                     print(f"  {adapter.name} for [{entry.key}]: {type(error).__name__}: {error}")
             print(f"  bibliography [{entry.key}]: {(entry.title or entry.raw)[:56]}")
+
+        # Claim support needs the text of whatever the fixture cites, not just
+        # its metadata.
+        document = load(BAD_PAPER)
+        report = check_claims(document, client)
+        print(
+            f"  claim support: {report.sources_with_full_text} of "
+            f"{report.sources_attempted} source(s) with full text"
+        )
 
         plan = [
             ("openalex by_doi real", lambda: openalex.by_doi(client, REAL_DOI)),
