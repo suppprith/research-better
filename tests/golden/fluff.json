@@ -534,8 +534,8 @@
   {
     "advisory": true,
     "char_range": [
-      4471,
-      4528
+      4726,
+      4783
     ],
     "matched_text": "A unified\nframework for adaptive retrieval was presented.",
     "note": "This sentence introduces no word the section's opening sentence did not already carry. It restates rather than concludes, so cutting it loses nothing.",

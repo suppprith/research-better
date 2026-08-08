@@ -93,6 +93,13 @@ Peer review has been studied for many years. Reviewers disagree with each other
 more often than authors expect. Calibration across a program committee is
 difficult to achieve in practice.
 
+# Limitations
+
+We did not evaluate on non-English collections. The expansion step assumes a
+first-pass ranking of reasonable quality, and we have not tested what happens
+when that assumption fails. Results at larger corpus sizes are not reproduced
+here.
+
 # Conclusion
 
 We presented a unified framework for adaptive retrieval. The method indexes the

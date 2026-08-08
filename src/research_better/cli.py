@@ -142,6 +142,16 @@ def build_parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="write the patch to the draft instead of only reporting it",
             )
+        if name == "novelty":
+            sub.add_argument(
+                "--confirm-claim",
+                action="store_true",
+                help=(
+                    "confirm the extracted contribution claim is correct. Nothing "
+                    "downstream should act on an unconfirmed claim, because if the "
+                    "claim is wrong every cut that follows is wrong"
+                ),
+            )
         if name == "report":
             sub.add_argument(
                 "--check",
@@ -244,6 +254,7 @@ def run(args: argparse.Namespace, console: Console) -> int:
             client=client,
             offline=args.offline,
             refresh=args.refresh,
+            claim_confirmed=bool(getattr(args, "confirm_claim", False)),
         )
         for name in names:
             outcome, entry = _run_one(name, context, store, console, source_hash)

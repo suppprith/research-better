@@ -144,6 +144,13 @@
     {
       "level": 1,
       "path": [
+        "Limitations"
+      ],
+      "title": "Limitations"
+    },
+    {
+      "level": 1,
+      "path": [
         "Conclusion"
       ],
       "title": "Conclusion"
@@ -396,6 +403,21 @@
       "id": "s-60a17f9e23ae",
       "section": "sec-4a25631a774b",
       "text": "Calibration across a program committee is\ndifficult to achieve in practice."
+    },
+    {
+      "id": "s-65160dd0c2e4",
+      "section": "sec-60d8d1378746",
+      "text": "We did not evaluate on non-English collections."
+    },
+    {
+      "id": "s-acb36f9178ef",
+      "section": "sec-60d8d1378746",
+      "text": "The expansion step assumes a\nfirst-pass ranking of reasonable quality, and we have not tested what happens\nwhen that assumption fails."
+    },
+    {
+      "id": "s-c1f6bc65cf94",
+      "section": "sec-60d8d1378746",
+      "text": "Results at larger corpus sizes are not reproduced\nhere."
     },
     {
       "id": "s-8854bd55a662",

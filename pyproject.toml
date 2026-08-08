@@ -78,6 +78,7 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 "src/research_better/voice.py" = ["SIM905", "RUF001"]
 "src/research_better/sources/merge.py" = ["SIM905"]
 "src/research_better/grounding/claims.py" = ["SIM905"]
+"src/research_better/novelty.py" = ["SIM905"]
 # RUF001 fires on the curly quote marks the attribution audit has to recognise,
 # because real drafts contain them and that is the point of the check.
 "src/research_better/grounding/originality.py" = ["SIM905", "RUF001"]

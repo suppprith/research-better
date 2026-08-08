@@ -146,7 +146,7 @@
     }
   ],
   "whole_paper": {
-    "citations_per_paragraph": 0.47,
+    "citations_per_paragraph": 0.45,
     "connectives": [
       [
         "moreover",
@@ -157,7 +157,7 @@
         1
       ]
     ],
-    "hedges_per_hundred_words": 1.23,
+    "hedges_per_hundred_words": 1.16,
     "hyphenation": [
       [
         "cooccur",
@@ -172,6 +172,10 @@
         "long-tail"
       ],
       [
+        "nonenglish",
+        "non-English"
+      ],
+      [
         "stateoftheart",
         "state-of-the-art"
       ],
@@ -182,12 +186,12 @@
     ],
     "label": "(whole paper)",
     "oxford_comma": "always",
-    "passive_ratio": 0.255,
+    "passive_ratio": 0.241,
     "person": "we",
     "scope": "whole_paper",
     "sentence_lengths": {
-      "count": 51,
-      "mean": 13.02,
+      "count": 54,
+      "mean": 12.98,
       "p10": 8.0,
       "p90": 23.0,
       "stdev": 6.32
@@ -207,6 +211,10 @@
         4
       ],
       [
+        "corpus",
+        4
+      ],
+      [
         "frequency",
         4
       ],
@@ -223,15 +231,15 @@
         3
       ],
       [
-        "corpus",
-        3
-      ],
-      [
         "design",
         3
       ],
       [
         "document",
+        3
+      ],
+      [
+        "expansion",
         3
       ],
       [
@@ -252,6 +260,10 @@
       ],
       [
         "paper",
+        3
+      ],
+      [
+        "ranking",
         3
       ],
       [
@@ -311,7 +323,11 @@
         2
       ],
       [
-        "expansion",
+        "first-pass",
+        2
+      ],
+      [
+        "first-pass ranking",
         2
       ],
       [
@@ -364,10 +380,6 @@
       ],
       [
         "question",
-        2
-      ],
-      [
-        "ranking",
         2
       ],
       [
@@ -471,6 +483,10 @@
         1
       ],
       [
+        "Results",
+        1
+      ],
+      [
         "Search",
         1
       ],
@@ -487,15 +503,15 @@
         1
       ],
       [
-        "first-pass",
-        1
-      ],
-      [
         "long-tail",
         1
       ],
       [
         "many",
+        1
+      ],
+      [
+        "non-English",
         1
       ],
       [
@@ -507,6 +523,6 @@
         1
       ]
     ],
-    "word_count": 650
+    "word_count": 687
   }
 }

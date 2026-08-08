@@ -17,8 +17,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from research_better import fluff, grounding, voice
-from research_better.findings import Finding
+from research_better import fluff, grounding, novelty, voice
+from research_better.findings import Finding, Severity, Suggestion
 from research_better.model import Document
 from research_better.net import PoliteClient
 from research_better.serialize import document_to_json
@@ -37,6 +37,10 @@ class PassContext:
     client: PoliteClient | None = None
     offline: bool = False
     refresh: bool = False
+    claim_confirmed: bool = False
+    """Set once the author has confirmed the extracted contribution claim. If
+    the claim is wrong every cut downstream is wrong, so nothing acts on an
+    unconfirmed one."""
 
     def require_client(self, pass_name: str) -> PoliteClient:
         if self.client is None:
@@ -116,6 +120,42 @@ def _ground(context: PassContext) -> PassResult:
     )
 
 
+def _novelty(context: PassContext) -> PassResult:
+    try:
+        report = novelty.analyse(context.document, confirmed=context.claim_confirmed)
+    except novelty.NoClaimFoundError as error:
+        # Not a tool failure. It is a finding about the paper, and the most
+        # useful one this pass can produce, so it is reported rather than
+        # raised through to an exit code 2.
+        return PassResult(
+            payload={"claim": None, "error": str(error)},
+            findings=(
+                Finding(
+                    span_id="",
+                    rule="novelty_no_claim_found",
+                    severity=Severity.HIGH,
+                    matched_text="",
+                    char_range=(0, 0),
+                    suggestion=Suggestion.REVIEW,
+                    note=str(error),
+                ),
+            ),
+            summary="no contribution claim could be found",
+        )
+
+    findings = novelty.to_findings(report)
+    unconfirmed = "" if report.claim_confirmed else ", claim not yet confirmed"
+    return PassResult(
+        payload=report.to_json(),
+        findings=tuple(findings),
+        summary=(
+            f"{len(report.orphans)} orphan paragraph(s), "
+            f"{len(report.unsupported_claim_parts)} unsupported part(s) of the claim"
+            f"{unconfirmed}"
+        ),
+    )
+
+
 def _originality(context: PassContext) -> PassResult:
     report = grounding.check_originality(context.document, context.require_client("originality"))
     findings = grounding.originality_findings(report)
@@ -160,8 +200,9 @@ PASSES: dict[str, Pass] = {
         name="novelty",
         artifact="novelty",
         help="check that the body supports the stated contribution",
-        implemented=False,
+        implemented=True,
         phase="P4 skill layer",
+        run=_novelty,
     ),
     "ground": Pass(
         name="ground",
