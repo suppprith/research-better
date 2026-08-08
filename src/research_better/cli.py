@@ -97,6 +97,11 @@ def _global_flags() -> argparse.ArgumentParser:
             "a citation was checked against the live literature or not."
         ),
     )
+    parent.add_argument(
+        "--refresh",
+        action="store_true",
+        help="ignore what is cached and fetch again. Use after a source has corrected a record",
+    )
     parent.add_argument("--json", action="store_true", help="machine-readable output")
     parent.add_argument(
         "--format",

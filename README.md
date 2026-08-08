@@ -39,6 +39,23 @@ Exit codes: `0` nothing found, `1` findings present, `2` the tool could not do
 its job. The last two are kept apart on purpose, because a build failing on a
 weak paper and a build failing on a broken tool are different events.
 
+### Set a contact address
+
+```
+export RESEARCH_BETTER_CONTACT="you@university.edu"
+```
+
+Every scholarly source this tool queries is a public API run by a nonprofit or
+a university and offered for free. OpenAlex, Crossref, and Unpaywall all run a
+faster pool for clients that identify themselves, and setting this puts you in
+it. It also means a source operator who sees a problem can email you rather
+than block the tool.
+
+Responses are cached under `.research-better/cache/`. `--offline` uses only
+what is cached and fails loudly when something is missing, rather than
+returning nothing and letting an unverified citation look like a finding about
+your paper. `--refresh` fetches again.
+
 ## Install
 
 ```

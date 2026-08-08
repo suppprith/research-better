@@ -1,0 +1,66 @@
+# Rate limits and cache lifetimes for the scholarly sources.
+#
+# Every source here is a public API run by a nonprofit or a university, paid for
+# by somebody else, and offered for free. Being a bad client gets this tool
+# blocked, and it gets its users blocked with it. So the defaults sit well below
+# the documented ceiling rather than at it. A paper with eighty references is
+# not urgent enough to justify hammering OpenAlex.
+#
+# `documented` records what the source published, `requests_per_second` is what
+# this tool actually does. The gap is deliberate.
+#
+# Verified 2026-08-08. These change. If a source starts returning 429 at a rate
+# below the number here, the number here is wrong and the fix is to lower it,
+# not to add retries.
+#
+# Setting a contact address gets better service from every one of these. See
+# RESEARCH_BETTER_CONTACT in the README.
+
+[openalex]
+base_url = "https://api.openalex.org"
+requests_per_second = 5.0
+burst = 5
+documented = "100,000 requests per day, 10 per second. The polite pool needs a mailto parameter"
+polite_parameter = "mailto"
+
+[crossref]
+base_url = "https://api.crossref.org"
+requests_per_second = 5.0
+burst = 5
+documented = "no published hard limit for the public pool, but it is shared and can be slow. The polite pool needs a mailto in the User-Agent"
+polite_parameter = "mailto"
+
+[semantic_scholar]
+base_url = "https://api.semanticscholar.org"
+requests_per_second = 0.2
+burst = 1
+documented = "roughly 100 requests per five minutes without an API key, which is one every three seconds. Rate limited hard, and the 429 arrives without warning"
+
+[arxiv]
+base_url = "https://export.arxiv.org"
+requests_per_second = 0.25
+burst = 1
+documented = "the terms of use ask for no more than one request every three seconds and a single connection at a time"
+
+[unpaywall]
+base_url = "https://api.unpaywall.org"
+requests_per_second = 5.0
+burst = 5
+documented = "100,000 requests per day. The email parameter is required, not optional"
+polite_parameter = "email"
+
+[cache]
+# A resolved DOI is permanent. The record for 10.1145/1234.5678 will say the
+# same thing next year, so re-fetching it is pure waste on both ends.
+record_ttl_days = 365
+# Search results are not permanent. New work appears, and a query that found
+# nothing last month may find something now.
+search_ttl_days = 7
+# Full texts are large and stable. Keeping them is the difference between an
+# originality check that takes a minute and one that takes twenty.
+fulltext_ttl_days = 365
+
+[concurrency]
+# A paper with eighty references must not open eighty sockets. This caps the
+# whole process, not each source.
+maximum_in_flight = 4
