@@ -12,8 +12,32 @@ sentence you did not write.
 
 ## Status
 
-Early. The foundation is landing first: document model, ingest adapters, and the
-deterministic analysis passes. See the issue tracker for the build order.
+Early. Ingest, the fluff pass, and voice profiling work. Citation verification,
+the novelty audit, reviewer questions, editing, and reporting are not built yet,
+and the commands for them say so rather than writing an empty artifact that
+would look like a check that found nothing.
+
+## Use
+
+```
+research-better run paper.md
+```
+
+Or one pass at a time:
+
+```
+research-better ingest paper.md    # parse and write the structure
+research-better fluff  paper.md    # text that does not serve the argument
+research-better voice  paper.md    # how the author writes, for later edits
+```
+
+Results land in `.research-better/` next to the draft. Every artifact records
+the hash of the draft it came from, so a pass reading stale analysis warns and
+the edit pass refuses.
+
+Exit codes: `0` nothing found, `1` findings present, `2` the tool could not do
+its job. The last two are kept apart on purpose, because a build failing on a
+weak paper and a build failing on a broken tool are different events.
 
 ## Install
 
