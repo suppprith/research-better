@@ -35,7 +35,28 @@ Everything re-exported from the package root, and nothing else:
 | `paper.verify_citations(client=None)` | `tuple[CitationCheck, ...]` |
 | `paper.claims(client=None)` | `ClaimReport` |
 | `paper.originality(client=None)` | `OriginalityReport` |
+| `paper.run(store=None, client=None, confirmed=False, venue=None, offline=False)` | `Report` |
+| `paper.edit(store=None)` | `Ledger`, raises `EvidenceGateError` |
 | `paper.report(store=None)` | `Report` |
+
+**Order matters, and `run` is how you get it right.** The individual methods
+above can be called in any order and that is safe, because none of them writes
+to your paper. The moment one would, it is behind a gate: `paper.edit()`
+refuses unless the novelty, grounding, fluff, and voice artifacts all exist,
+all carry the hash of the draft as it is on disk right now, and the
+contribution claim has been confirmed by a person.
+
+`paper.run()` walks `RUN_ORDER`, the same list the CLI walks, writes the
+artifacts beside the draft, and returns the report. Use it unless you want one
+specific check.
+
+`paper.edit()` proposes and never writes. Applying a patch to a draft stays on
+the command line, where `--apply` is a thing somebody typed, a backup is taken
+first, and `rb revert` undoes it.
+
+`docs/GUARANTEES.md` says which of these rules are enforced by code, which hold
+only through the skill, and which are obligations on you. It is worth reading
+before you build on any of them, because the three are not interchangeable.
 
 Plus the types those results are made of: `Finding`, `Severity`, `Suggestion`,
 `Document`, `Section`, `Paragraph`, `Sentence`, `Span`, `Citation`,

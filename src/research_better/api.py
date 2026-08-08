@@ -51,6 +51,8 @@ from research_better import reviewer as reviewer_pass
 from research_better import trace as trace_pass
 from research_better import voice as voice_pass
 from research_better.artifacts import ArtifactStore
+from research_better.edit.ledger import Ledger
+from research_better.errors import ResearchBetterError
 from research_better.fluff import FluffReport
 from research_better.grounding import ClaimReport, GroundingReport, OriginalityReport
 from research_better.grounding.verify import CitationCheck
@@ -195,6 +197,106 @@ class Paper:
     ) -> tuple[CitationCheck, ...]:
         return await asyncio.to_thread(self.verify_citations, client)
 
+    # The whole check, in order ---------------------------------------------
+
+    def run(
+        self,
+        store: ArtifactStore | None = None,
+        client: PoliteClient | None = None,
+        confirmed: bool = False,
+        venue: str | None = None,
+        offline: bool = False,
+    ) -> Report:
+        """Every pass, in the order they have to run in, and then the report.
+
+        The method this API was missing. Without it a caller got ten individual
+        passes and had to know the order, the gates, and the confirmation stop
+        themselves, from a document they were never shown. That made the
+        ordering a preference for a library user and a guarantee for a CLI
+        user, from the same code.
+
+        The order is `passes.RUN_ORDER`, which is the one the CLI walks:
+        ingest first because everything reads it, voice before any pass that
+        could propose words, trace after grounding and fluff because it is a
+        synthesis of what they found.
+
+        Artifacts are written beside the draft exactly as the CLI writes them,
+        because that is what the evidence gate reads and what lets the report
+        name the passes that did not run. A pass that refuses is recorded and
+        the run continues, so one missing artifact does not cost the rest.
+
+        `confirmed=False` is the honest default and it stops `edit` here, the
+        same way it stops it on the command line. Read the claim off the
+        `novelty()` result, show it to whoever wrote the paper, and pass
+        `confirmed=True` only once they have said it is right.
+        """
+        from research_better.passes import PASSES, RUN_ORDER, PassContext
+
+        store = store or ArtifactStore(self.document.path)
+        source_hash = self.document.source_hash
+
+        with self._client(client, offline=offline) as http:
+            context = PassContext(
+                document=self.document,
+                client=http,
+                offline=offline,
+                venue=venue,
+                claim_confirmed=confirmed,
+                store=store,
+            )
+            for name in RUN_ORDER:
+                entry = PASSES[name]
+                if not entry.implemented or entry.run is None:
+                    continue
+                if entry.preflight is not None:
+                    try:
+                        entry.preflight(context, store)
+                    except ResearchBetterError:
+                        # The same refusal the CLI reports and keeps going
+                        # from. `report` reads what exists and names what does
+                        # not, so the gap is in the returned page rather than
+                        # swallowed.
+                        continue
+                result = entry.run(context)
+                store.write(entry.artifact, result.payload, source_hash, offline=offline)
+                if result.markdown is not None:
+                    store.write_text(entry.artifact, result.markdown, source_hash)
+
+        return self.report(store)
+
+    def edit(
+        self,
+        store: ArtifactStore | None = None,
+    ) -> Ledger:
+        """The changes the evidence supports, as proposals. Nothing is written.
+
+        Behind the same evidence gate the CLI is behind, and for the same
+        reason: a prompt is a preference and a check is a guarantee. It refuses
+        unless the novelty, grounding, fluff, and voice artifacts all exist,
+        all carry the hash of the draft as it is on disk right now, and the
+        contribution claim has been confirmed. Run `run()` first, or the
+        matching passes by hand.
+
+        Raises `EvidenceGateError` naming the first thing missing and the
+        command that produces it.
+
+        Proposing is the whole surface. Writing the patch back into somebody's
+        draft stays on the command line, where `--apply` is a thing a person
+        typed, a backup is taken, and `rb revert` undoes it.
+        """
+        from research_better import edit as edit_layer
+
+        store = store or ArtifactStore(self.document.path)
+        bundle = edit_layer.gather(store, self.document.source_hash)
+        lock = edit_layer.VoiceLock.of(self.document, bundle.payload("voice"))
+        decisions = edit_layer.load_decisions(store)
+        return edit_layer.build(
+            self.document,
+            bundle,
+            edit_layer.rejected_ids(decisions),
+            edit_layer.screen(lock),
+        )
+
     # The one page ----------------------------------------------------------
 
     def report(self, store: ArtifactStore | None = None) -> Report:
@@ -216,16 +318,20 @@ class Paper:
     # Internals -------------------------------------------------------------
 
     @contextmanager
-    def _client(self, client: PoliteClient | None) -> Iterator[PoliteClient]:
+    def _client(self, client: PoliteClient | None, offline: bool = False) -> Iterator[PoliteClient]:
         """Use the caller's client, or build and close one just like the CLI.
 
         A client the caller passed is never closed here. It is theirs, it may
         be serving other work, and closing somebody else's connection pool
         because one function finished with it is the kind of thing that shows
         up much later as an unrelated bug.
+
+        `offline` only applies to a client built here. A caller who passed
+        their own already decided this, and quietly overriding it would mean
+        `offline=False` could put a deliberately offline client on the network.
         """
         if client is not None:
             yield client
             return
-        with PoliteClient(default_cache(self.document.path)) as built:
+        with PoliteClient(default_cache(self.document.path), offline=offline) as built:
             yield built

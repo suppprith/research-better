@@ -114,7 +114,7 @@ def test_the_refusals_are_in_the_body_not_a_reference(skill: str) -> None:
         "Never claim a check that did not run",
         "Never help evade a detector",
         "Never edit results, data, or numbers",
-        "Never report a percentage",
+        "Never present a count as a score",
         "Never answer the reviewer questions",
     ):
         assert refusal in text

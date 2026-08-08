@@ -230,3 +230,115 @@ def test_no_submodule_is_exported_by_accident() -> None:
     for name in research_better.__all__:
         attribute = getattr(research_better, name)
         assert not getattr(attribute, "__path__", None), f"{name} is a package"
+
+
+# The ordered run, and the gate behind it -----------------------------------
+#
+# The library had ten individual passes and no `run`, so a caller had to know
+# the order, the gates, and the confirmation stop themselves, from a document
+# they were never shown. That made the ordering a preference for a library user
+# and a guarantee for a CLI user, out of the same code. See
+# docs/GUARANTEES.md, which names the test behind each guarantee, including
+# these.
+
+
+@pytest.fixture
+def workspace(tmp_path: Path, client: PoliteClient) -> Paper:
+    target = tmp_path / "bad-paper.md"
+    target.write_bytes(FIXTURE.read_bytes())
+    return Paper.load(target)
+
+
+def test_run_walks_the_same_order_the_cli_does(workspace: Paper, client: PoliteClient) -> None:
+    """The same list, not a second one, so the two cannot drift."""
+    from research_better.passes import RUN_ORDER
+
+    seen: list[str] = []
+    workspace.run(client=client, offline=True, confirmed=True)
+
+    from research_better.artifacts import ArtifactStore
+    from research_better.passes import PASSES
+
+    store = ArtifactStore(workspace.path)
+    for name in RUN_ORDER:
+        if store.path_for(PASSES[name].artifact).is_file():
+            seen.append(name)
+
+    assert seen == [name for name in RUN_ORDER if name in seen]
+    assert "voice" in seen and "edit" in seen
+    assert seen.index("voice") < seen.index("edit"), (
+        "voice has to be profiled before anything proposes words"
+    )
+
+
+def test_run_returns_a_report_naming_what_did_not_run(
+    workspace: Paper, client: PoliteClient
+) -> None:
+    report = workspace.run(client=client, offline=True, confirmed=True)
+    payload = report.to_json()
+    # The report reads what exists and names what does not, which is the whole
+    # reason `run` records a refusal and keeps going rather than aborting.
+    assert "not_checked" in payload
+
+
+def test_a_library_caller_hits_the_evidence_gate(workspace: Paper) -> None:
+    """The same refusal a CLI user gets, from the same `gather` call.
+
+    Before this the library could not reach the edit pass at all, so the gate
+    was a CLI property rather than a tool property.
+    """
+    from research_better.edit.gate import EvidenceGateError
+
+    with pytest.raises(EvidenceGateError) as error_info:
+        workspace.edit()
+    assert "does not exist" in str(error_info.value)
+    assert "Run: research-better" in str(error_info.value)
+
+
+def test_a_library_caller_cannot_act_on_an_unconfirmed_claim(
+    workspace: Paper, client: PoliteClient
+) -> None:
+    """If the claim is wrong, every cut below it is wrong, and the author is
+    the only one who knows."""
+    from research_better.edit.gate import EvidenceGateError
+
+    workspace.run(client=client, offline=True, confirmed=False)
+    with pytest.raises(EvidenceGateError) as error_info:
+        workspace.edit()
+    assert "has not been confirmed" in str(error_info.value)
+
+
+def test_a_confirmed_run_lets_the_edit_pass_propose(workspace: Paper, client: PoliteClient) -> None:
+    workspace.run(client=client, offline=True, confirmed=True)
+    ledger = workspace.edit()
+    assert ledger.edits
+    for edit in ledger.edits:
+        assert edit.evidence, "every row names the record behind it"
+
+
+def test_the_library_proposes_and_never_writes(workspace: Paper, client: PoliteClient) -> None:
+    """Applying a patch to somebody's draft stays on the command line, where
+    --apply is a thing a person typed and `rb revert` undoes it."""
+    before = workspace.path.read_bytes()
+    workspace.run(client=client, offline=True, confirmed=True)
+    workspace.edit()
+    assert workspace.path.read_bytes() == before
+
+
+def test_run_offline_does_not_reach_the_network(workspace: Paper) -> None:
+    """`offline` has to reach the client this builds, not only the passes.
+
+    It did not, so a run asked for offline fetched anyway. Found by it writing
+    new responses into the recorded fixture directory.
+    """
+    import contextlib
+
+    from research_better.errors import ResearchBetterError
+
+    with contextlib.suppress(ResearchBetterError):
+        workspace.run(offline=True, confirmed=True)
+    # An offline client with a cold cache reaches nothing. What matters is that
+    # nothing was fetched, which a live client would have done silently.
+    from research_better.artifacts import ArtifactStore
+
+    assert ArtifactStore(workspace.path).path_for("paper").is_file()

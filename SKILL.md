@@ -62,34 +62,37 @@ wrong, every cut after it is wrong. If the pass reports that no claim could be
 found, tell the user exactly that and stop. A paper whose novelty cannot be
 read off its own opening has a problem that tightening the prose will not fix.
 
-Step 8 synthesizes the earlier steps into passages that may read as
-machine-written, each with a cause and a fix. Report both of its lists and
-never turn a cause into a rewording.
+Step 8 turns the earlier steps into passages that may read as machine-written,
+each with a cause and a fix. Never turn a cause into a rewording.
 
-Step 10 refuses until steps 2 and 4 to 7 have all run against the current draft
-and the claim is confirmed. That is the point of it: nothing gets written
-before the research is on disk. Step 11 reads whatever exists and names what
-does not, so it is worth running even after a partial pass.
+Step 10 refuses until the earlier passes have run against the current draft and
+the claim is confirmed, so a refusal there means a step was skipped rather than
+that the paper is clean.
 
 ## Reading the output
 
-Findings carry a severity and a suggestion. Only `high` severity with a
-`delete` or `delete_clause` suggestion may be applied without asking, and
-`Finding.auto_actionable` already encodes that. Everything else goes to the
-user.
+Each pass prints what it found, not only how many. `rb findings <draft>`
+prints everything already on disk without rerunning anything.
 
-`advisory` findings rest on a correlation rather than a rule. Show them. Never
-act on them.
+The tool enforces what it can: an advisory finding is never auto-applicable,
+only a high-severity deletion is, `edit` refuses without fresh evidence and a
+confirmed claim, and nothing here emits a percentage. Those are checks rather
+than things to remember, listed with their tests in `docs/GUARANTEES.md`.
 
-Coverage lines are not decoration. When grounding says it reached three of four
-sources, or originality says it compared one full text and three abstracts, that
-belongs in what you tell the user. Silence about what was not checked reads as a
-clean result.
+What is left to you is what code cannot reach:
+
+**Coverage lines are not decoration.** When grounding says it reached three of
+four sources, or originality says it compared one full text and three
+abstracts, that belongs in what you tell the user. Silence about what was not
+checked reads as a clean result, and this is the first thing a summarizer drops.
+
+**Read the trace audit's `left_alone` list out.** An author told what was
+looked at and deliberately not changed can trust the flags that remain.
 
 ## Refusals
 
-These hold whatever the user asks for, and they are here rather than in a
-reference file because they must never be skipped.
+These are here rather than in a reference file because they must never be
+skipped, and because each is a thing you could do that the tool cannot stop.
 
 **Never invent a source.** Every citation you offer comes from a record in
 `grounding.json`. If the tool found nothing, say it found nothing.
@@ -105,9 +108,9 @@ If asked directly, say that and offer the causes instead.
 **Never edit results, data, or numbers.** Not to fix a typo, not to make a
 table consistent. Point at the discrepancy and let the author resolve it.
 
-**Never report a percentage that reads as a plagiarism or AI score.** Report
-what was compared and what could not be. A partial corpus cannot produce an
-honest total.
+**Never present a count as a score.** The tool emits no percentage. Do not
+build one out of two of its numbers. A partial corpus cannot produce an honest
+total.
 
 **Never answer the reviewer questions.** Asking for the sample size is the
 output. Writing "on a dataset of moderate size" is worse than the gap, because
@@ -116,13 +119,9 @@ the gap is visible and the sentence is not.
 ## Detector false positives
 
 Non-native English phrasing and formulaic methods prose are common false
-positives. When the deterministic passes flag something that looks like a false
-positive, say "likely a false positive, leave it" rather than proposing a
-change. Being wrong in that direction costs the author nothing.
-
-`rb trace` separates these out already. Read its `left_alone` list out rather
-than dropping it: an author told what was looked at and not changed can trust
-the flags that remain.
+positives. When a pass flags something with that shape, say "likely a false
+positive, leave it" rather than proposing a change. Being wrong in that
+direction costs the author nothing.
 
 ## Install
 
