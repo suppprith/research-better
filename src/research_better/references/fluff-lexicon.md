@@ -60,13 +60,19 @@ severity: medium
 suggestion: delete
 note: An intensifier in front of an unmeasured adjective adds emphasis, not information. Report the number instead, or drop the word.
 
+Terms here are single words that can be deleted on their own. `rather` was one
+until a real paper showed that almost every use of it in academic prose is the
+conjunction `rather than`, where deleting the word does not shorten a sentence,
+it breaks one: "we place the anchor greedily than geometrically". `rather
+large` is a real intensifier and does occur, and a rule whose false positives
+outnumber its true positives twenty to one is worse than no rule.
+
 - very
 - extremely
 - highly
 - incredibly
 - truly
 - quite
-- rather
 - particularly
 - remarkably
 - exceptionally

@@ -324,3 +324,92 @@ def test_the_shipped_lexicon_covers_every_matcher() -> None:
 def test_a_missing_lexicon_file_says_where_it_looked(tmp_path) -> None:
     with pytest.raises(LexiconError, match="lexicon not found"):
         load_lexicon(tmp_path / "absent.md")
+
+
+# Deleting a term has to leave a sentence -----------------------------------
+#
+# `rather` was an empty_intensifiers term, and the matcher is word-boundary
+# based, so every `rather than` in a real paper matched: 21 of 28 fluff
+# findings and 6 of 18 trace flags on one paper, all of them contrast
+# conjunctions. Deleting the word does not shorten the sentence, it breaks it
+# into "we place the anchor greedily than geometrically", which is worse than
+# the fluff it was cutting and is exactly what this tool exists to prevent.
+
+
+def test_rather_than_is_not_an_empty_intensifier() -> None:
+    """Taken from a real paper. `than` is a word, so the matcher's
+    following-word check was satisfied and the contrast conjunction matched."""
+    assert "empty_intensifiers" not in rules_for(
+        "We place the anchor greedily rather than geometrically."
+    )
+
+
+def test_rather_than_simply_is_not_an_empty_intensifier() -> None:
+    assert "empty_intensifiers" not in rules_for(
+        "We hold the budget fixed rather than simply holding the index size fixed."
+    )
+
+
+def test_the_surviving_intensifiers_still_fire() -> None:
+    """Dropping one term must not quietly disable the rule."""
+    assert matched("The approach is very effective for retrieval.", "empty_intensifiers") == [
+        "very"
+    ]
+    assert matched("The result is quite surprising for retrieval.", "empty_intensifiers") == [
+        "quite"
+    ]
+
+
+def test_no_deletable_term_opens_a_longer_phrase_the_lexicon_knows() -> None:
+    """The general guard, and the one that would have caught this before release.
+
+    A single word the tool will delete on its own must not be the first word of
+    a multi-word construction the lexicon itself lists. If the file knows
+    `rather than simply` is a fixed phrase, then it already knows `rather` is
+    not a free-standing intensifier, and deleting it alone leaves wreckage.
+
+    This is a check on the data rather than on a sentence, so it holds for
+    terms nobody has written a test sentence for, which is where the next one
+    of these will come from.
+    """
+    lexicon = load_lexicon()
+
+    deletable = {
+        term.phrase.lower()
+        for section in lexicon.sections
+        if section.suggestion in {Suggestion.DELETE, Suggestion.DELETE_CLAUSE}
+        for term in section.terms
+        if " " not in term.phrase and not term.replacement
+    }
+
+    offenders = [
+        (term.phrase, section.id)
+        for section in lexicon.sections
+        for term in section.terms
+        if len(term.phrase.split()) > 1 and term.phrase.lower().split()[0] in deletable
+    ]
+
+    assert not offenders, (
+        f"these lexicon phrases start with a word the tool deletes on its own: "
+        f"{offenders}. Deleting the first word of a fixed construction does not "
+        f"shorten the sentence, it breaks it."
+    )
+
+
+def test_the_trace_filler_signal_no_longer_counts_contrast_conjunctions() -> None:
+    """The downstream half. Filler is a content signal for the trace audit, so
+    two false positives in a paragraph were enough to flag a passage with
+    nothing wrong with it, and a reader who checks two flags and finds them
+    both bogus stops reading the rest."""
+    from research_better import trace
+
+    document = ingest(
+        "draft.md",
+        "# Results\n\n"
+        "We place the anchor greedily rather than geometrically. We hold the budget "
+        "fixed rather than holding the index size fixed. Coverage is measured rather "
+        "than estimated. We report the median rather than the mean.\n",
+    )
+    audit = trace.analyse(document)
+    signals = [signal.id for passage in audit.flagged for signal in passage.signals]
+    assert "filler" not in signals
