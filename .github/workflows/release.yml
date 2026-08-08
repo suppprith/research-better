@@ -1,0 +1,119 @@
+name: Release
+
+# Tag-triggered and nothing else. A release is reproducible from `git tag
+# v0.1.0 && git push --tags` with no manual step, which is what stops a
+# published artifact differing from what is in the repository.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The changelog check reads history, and a shallow clone has none.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tooling
+        run: pip install build twine
+
+      # Before anything is built, because none of these can be fixed after an
+      # upload: PyPI does not let a version be replaced.
+      - name: Tag, version, and changelog agree
+        run: python scripts/check_release.py "${GITHUB_REF_NAME}"
+
+      - name: Build
+        run: python -m build
+
+      - name: Check the metadata renders
+        run: twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+
+  smoke:
+    name: clean install ${{ matrix.python-version }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+
+      # The failure this catches is the one that cannot be taken back: a wheel
+      # that works in the repository, where src/ is on the path and every extra
+      # is installed, and dies on a machine that has only the wheel. Runs with
+      # no extras and the network cut off at the proxy.
+      - name: Fresh interpreter, no extras, no network
+        run: python scripts/smoke_test.py "$(ls dist/*.whl)"
+
+  publish:
+    name: publish to PyPI
+    needs: [build, smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/research-better
+    permissions:
+      # Trusted publishing. The workflow mints a short-lived token from GitHub
+      # at upload time, so there is no long-lived PyPI token in repository
+      # secrets to leak, rotate, or forget about.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  announce:
+    name: github release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+
+      # The changelog section is the release body. Generated notes are added
+      # under it, which is where merged pull requests show up.
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/release_notes.py "${GITHUB_REF_NAME}" > notes.md
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file notes.md \
+            --generate-notes

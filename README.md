@@ -63,6 +63,12 @@ your paper. `--refresh` fetches again.
 pip install research-better
 ```
 
+Or run it without installing anything:
+
+```
+uvx research-better run paper.md
+```
+
 Format support is optional so the base install stays small:
 
 ```
@@ -71,6 +77,33 @@ pip install "research-better[docx]"    # Word
 pip install "research-better[pdf]"     # PDF, review only
 pip install "research-better[all]"
 ```
+
+The base install checks a Markdown paper with no extras at all. Both
+`research-better` and `rb` are installed and do the same thing.
+
+### Shell completion
+
+Completions for bash, zsh, and fish are in [`completions/`](completions), and
+they are generated from the parser rather than maintained by hand:
+
+```
+source completions/research-better.bash                  # bash
+cp completions/research-better.zsh ~/.zfunc/_research-better    # zsh, with ~/.zfunc on $fpath
+cp completions/research-better.fish ~/.config/fish/completions/  # fish
+```
+
+### As a Python library
+
+```python
+from research_better import Paper
+
+paper = Paper.load("draft.tex")
+for finding in paper.fluff().mechanical:
+    print(finding.rule, finding.matched_text)
+```
+
+The deterministic passes need no key, no client, and no network. See
+[docs/API.md](docs/API.md) for the public surface and what it promises.
 
 ## Formats
 
