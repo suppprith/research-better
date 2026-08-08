@@ -35,12 +35,22 @@ jobs:
         run: ruff format --check .
 
       # The tool flags fluff in other people's writing, so its own output has to
-      # hold the same line. See CONTRIBUTING.md for the full rules.
+      # hold the same line, against the tool's own filler-opener list. See
+      # CONTRIBUTING.md for the full rules.
       - name: prose rules
         run: python scripts/lint_prose.py
 
       - name: mypy
         run: mypy
+
+      # Every command output in the README and everything under examples/ comes
+      # from a real run. A change to any pass that changes that output leaves
+      # the documentation wrong until it is regenerated, and this is where that
+      # is noticed rather than by a reader.
+      - name: the worked example is current
+        run: |
+          python scripts/build_example.py
+          git diff --exit-code examples/
 
   test:
     name: pytest ${{ matrix.python-version }}

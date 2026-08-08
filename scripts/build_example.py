@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import re
 import shutil
 import sys
 import tempfile
@@ -117,12 +118,25 @@ def render() -> dict[str, str]:
 
             patch = store.path_for("edits", ".diff")
             if patch.is_file():
-                files["edits.diff"] = patch.read_text(encoding="utf-8").replace(
-                    str(draft), "paper.md"
+                files["edits.diff"] = _stable(
+                    patch.read_text(encoding="utf-8").replace(str(draft), "paper.md")
                 )
             return files
     finally:
         _restore(monkeypatched)
+
+
+TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}")
+
+
+def _stable(patch: str) -> str:
+    """Blank the timestamps a unified diff header carries.
+
+    They are the time of the run and nothing else. Left in, this file would
+    regenerate dirty on every run and everybody would learn to ignore its diff,
+    which would defeat the check that keeps the example honest.
+    """
+    return TIMESTAMP.sub("(generated)", patch)
 
 
 def _strip_provenance(body: str) -> str:
