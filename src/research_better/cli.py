@@ -105,6 +105,10 @@ def _global_flags() -> argparse.ArgumentParser:
         action="store_true",
         help="ignore what is cached and fetch again. Use after a source has corrected a record",
     )
+    parent.add_argument(
+        "--venue",
+        help="target venue, so questions are weighted for it. Falls back to conservative defaults",
+    )
     parent.add_argument("--json", action="store_true", help="machine-readable output")
     parent.add_argument(
         "--format",
@@ -190,6 +194,8 @@ def _run_one(
 
     result = entry.run(context)
     target = store.write(entry.artifact, result.payload, source_hash, offline=context.offline)
+    if result.markdown is not None:
+        store.write_text(entry.artifact, result.markdown, source_hash)
     _emit(console, name, result, target)
 
     return (
@@ -254,6 +260,7 @@ def run(args: argparse.Namespace, console: Console) -> int:
             client=client,
             offline=args.offline,
             refresh=args.refresh,
+            venue=args.venue,
             claim_confirmed=bool(getattr(args, "confirm_claim", False)),
         )
         for name in names:

@@ -108,14 +108,13 @@ def test_an_artifact_records_the_hash_of_the_draft_it_came_from(draft: Path) -> 
 def test_an_unbuilt_pass_refuses_rather_than_writing_an_empty_artifact(
     draft: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert main(["ask", str(draft), "--quiet"]) == EXIT_ERROR
+    assert main(["edit", str(draft), "--quiet"]) == EXIT_ERROR
     message = capsys.readouterr().err
     assert "not built yet" in message
-    assert "P4" in message
-    # An empty reviewer-questions artifact looks exactly like a reviewer pass
-    # that found nothing to ask, which is the false assurance this tool must
-    # not give.
-    assert not ArtifactStore(draft).path_for("reviewer-questions").exists()
+    assert "P5" in message
+    # An empty edits.json looks exactly like an edit pass that found nothing to
+    # change, which is the false assurance this tool must not give.
+    assert not ArtifactStore(draft).path_for("edits").exists()
 
 
 @pytest.mark.parametrize("name", sorted(n for n, p in PASSES.items() if not p.implemented))

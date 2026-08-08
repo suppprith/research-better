@@ -17,7 +17,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from research_better import fluff, grounding, novelty, voice
+from research_better import fluff, grounding, novelty, reviewer, voice
 from research_better.findings import Finding, Severity, Suggestion
 from research_better.model import Document
 from research_better.net import PoliteClient
@@ -37,6 +37,7 @@ class PassContext:
     client: PoliteClient | None = None
     offline: bool = False
     refresh: bool = False
+    venue: str | None = None
     claim_confirmed: bool = False
     """Set once the author has confirmed the extracted contribution claim. If
     the claim is wrong every cut downstream is wrong, so nothing acts on an
@@ -53,6 +54,9 @@ class PassResult:
     payload: Any
     findings: tuple[Finding, ...] = ()
     summary: str = ""
+    markdown: str | None = None
+    """Set when the pass has a human-readable form worth writing beside the
+    JSON. Reviewer questions are meant to be read, not parsed."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -156,6 +160,27 @@ def _novelty(context: PassContext) -> PassResult:
     )
 
 
+def _ask(context: PassContext) -> PassResult:
+    try:
+        audit: novelty.NoveltyReport | None = novelty.analyse(context.document)
+    except novelty.NoClaimFoundError:
+        # Without a claim there is no blocking contribution question to ask,
+        # but every other check still applies.
+        audit = None
+
+    report = reviewer.analyse(context.document, audit, venue=context.venue)
+    counts = report.to_json()["counts"]
+    return PassResult(
+        payload=report.to_json(),
+        # Questions are not findings about correctness. They are prompts for
+        # work only the author can do, so they do not fail a CI check.
+        summary=(
+            f"{counts['blocking']} blocking, {counts['serious']} serious, {counts['minor']} minor"
+        ),
+        markdown=report.to_markdown(),
+    )
+
+
 def _originality(context: PassContext) -> PassResult:
     report = grounding.check_originality(context.document, context.require_client("originality"))
     findings = grounding.originality_findings(report)
@@ -226,8 +251,9 @@ PASSES: dict[str, Pass] = {
         name="ask",
         artifact="reviewer-questions",
         help="raise the questions a reviewer will ask",
-        implemented=False,
+        implemented=True,
         phase="P4 skill layer",
+        run=_ask,
     ),
     "edit": Pass(
         name="edit",

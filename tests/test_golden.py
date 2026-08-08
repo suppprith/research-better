@@ -14,12 +14,12 @@ import pytest
 
 from conftest import GOOD_PARAGRAPH_OPENER
 from golden_harness import Golden, GoldenMismatchError, diff
-from research_better import fluff, grounding, novelty, voice
+from research_better import fluff, grounding, novelty, reviewer, voice
 from research_better.model import Document
 from research_better.net import HttpCache, PoliteClient
 from research_better.sources import ArxivAdapter, CrossrefAdapter, OpenAlexAdapter
 
-PASSES = ("ingest", "fluff", "voice", "grounding", "originality", "novelty")
+PASSES = ("ingest", "fluff", "voice", "grounding", "originality", "novelty", "reviewer-questions")
 """Every pass that produces a reviewable artifact. Extended as passes land."""
 
 
@@ -65,6 +65,11 @@ def test_grounding_matches_its_golden(bad_paper: Document, golden: Golden) -> No
 
 def test_novelty_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
     golden.check("novelty", novelty.analyse(bad_paper).to_json())
+
+
+def test_reviewer_questions_match_their_golden(bad_paper: Document, golden: Golden) -> None:
+    audit = novelty.analyse(bad_paper)
+    golden.check("reviewer-questions", reviewer.analyse(bad_paper, audit).to_json())
 
 
 def test_originality_matches_its_golden(bad_paper: Document, golden: Golden) -> None:
