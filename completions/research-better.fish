@@ -3,6 +3,7 @@
 
 complete -c research-better -f
 complete -c research-better -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
+complete -c research-better -n __fish_use_subcommand -a check-analysis -d 'grade a written analysis against the artifacts it claims to read'
 complete -c research-better -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c research-better -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
 complete -c research-better -n __fish_use_subcommand -a findings -d 'print what the passes already found, without running anything'
@@ -25,6 +26,15 @@ complete -c research-better -n '__fish_seen_subcommand_from ask' -l quiet
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l refresh
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l venue
 complete -c research-better -n '__fish_seen_subcommand_from ask' -l verbose
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l format
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l help
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l json
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l no-color
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l offline
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l quiet
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l refresh
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l venue
+complete -c research-better -n '__fish_seen_subcommand_from check-analysis' -l verbose
 complete -c research-better -n '__fish_seen_subcommand_from doctor' -l expect
 complete -c research-better -n '__fish_seen_subcommand_from doctor' -l format
 complete -c research-better -n '__fish_seen_subcommand_from doctor' -l help
@@ -154,6 +164,7 @@ complete -c research-better -n __fish_use_subcommand -a '(__fish_complete_path)'
 
 complete -c rb -f
 complete -c rb -n __fish_use_subcommand -a ask -d 'raise the questions a reviewer will ask'
+complete -c rb -n __fish_use_subcommand -a check-analysis -d 'grade a written analysis against the artifacts it claims to read'
 complete -c rb -n __fish_use_subcommand -a doctor -d 'report the installed version, the formats it can read, and what is missing'
 complete -c rb -n __fish_use_subcommand -a edit -d 'turn findings into a patch, applied only with --apply'
 complete -c rb -n __fish_use_subcommand -a findings -d 'print what the passes already found, without running anything'
@@ -176,6 +187,15 @@ complete -c rb -n '__fish_seen_subcommand_from ask' -l quiet
 complete -c rb -n '__fish_seen_subcommand_from ask' -l refresh
 complete -c rb -n '__fish_seen_subcommand_from ask' -l venue
 complete -c rb -n '__fish_seen_subcommand_from ask' -l verbose
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l format
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l help
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l json
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l no-color
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l offline
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l quiet
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l refresh
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l venue
+complete -c rb -n '__fish_seen_subcommand_from check-analysis' -l verbose
 complete -c rb -n '__fish_seen_subcommand_from doctor' -l expect
 complete -c rb -n '__fish_seen_subcommand_from doctor' -l format
 complete -c rb -n '__fish_seen_subcommand_from doctor' -l help

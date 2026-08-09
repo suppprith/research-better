@@ -16,7 +16,7 @@ _research_better() {
     done
 
     if [[ -z "$command" ]]; then
-        COMPREPLY=($(compgen -W "ask doctor edit findings fluff ground ingest novelty originality report revert run trace voice --format --help --json --no-color --offline --quiet --refresh --venue --verbose --version -h -q -v" -- "$current"))
+        COMPREPLY=($(compgen -W "ask check-analysis doctor edit findings fluff ground ingest novelty originality report revert run trace voice --format --help --json --no-color --offline --quiet --refresh --venue --verbose --version -h -q -v" -- "$current"))
         return
     fi
 
@@ -26,6 +26,7 @@ _research_better() {
 
     case "$command" in
         ask) options="--format --help --json --no-color --offline --quiet --refresh --venue --verbose -h -q -v" ;;
+        check-analysis) options="--format --help --json --no-color --offline --quiet --refresh --venue --verbose -h -q -v" ;;
         doctor) options="--expect --format --help --json --no-color --offline --quiet --refresh --venue --verbose -h -q -v" ;;
         edit) options="--apply --force --format --help --interactive --json --no-color --offline --quiet --refresh --target-reduction --venue --verbose -h -q -v" ;;
         findings) options="--format --help --json --no-color --offline --quiet --refresh --venue --verbose -h -q -v" ;;

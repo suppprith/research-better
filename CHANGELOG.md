@@ -12,6 +12,45 @@ internal and can move in any release.
 
 Nothing yet.
 
+## 0.3.0
+
+### Added
+
+- **`rb check-analysis <draft> <analysis>`**, which grades prose written about
+  a paper against the artifacts it claims to be reading. Pass `-` to read the
+  analysis from stdin.
+
+  0.2.0 gave the skill a step that writes the final analysis and a reference
+  file saying what it may and may not contain. A reference file is a
+  preference, and this project's own sentence about those is in `edit/gate.py`:
+  a prompt is a preference and a check is a guarantee. This is the check, and
+  it is the evidence gate pointed one layer up: the gate refuses to write
+  before the research is on disk, and this refuses a sentence that goes beyond
+  what the research says.
+
+  It refuses a citation the grounding pass never saw, a percentage, a verdict
+  on the paper as a whole, a coverage caveat that was dropped, and a number no
+  artifact and no part of the paper contains. Exit 1 on a violation, so it
+  works in a pipeline.
+
+  It also names the two rules it cannot check, because both need to understand
+  a sentence rather than match one: whether the analysis rewrote the author's
+  prose, and whether it answered a reviewer question instead of relaying it. A
+  checker that reports nothing wrong without saying what it never examined
+  would be making the false-assurance move this tool refuses everywhere else.
+
+  No model call. A grader needing a model cannot run in CI, cannot run offline,
+  and cannot be argued with. Every rule is one two people can disagree about by
+  reading it.
+
+- Step 13 of the skill runs it on what step 12 wrote.
+
+### Changed
+
+- Artifacts written by 0.2.0 are not read by 0.3.0. No payload shape moved this
+  time, but the evidence gate treats any minor bump as a break before 1.0 and
+  that rule is deliberate. Rerun the passes.
+
 ## 0.2.0
 
 Everything here came from running 0.1.0 on a real IEEEtran paper for the first

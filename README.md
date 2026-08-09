@@ -160,6 +160,23 @@ running anything, which is the cheap way to see what a run found after the
 output has scrolled away. Every artifact records the hash of the draft it came
 from, so a pass reading stale analysis warns and the edit pass refuses.
 
+### Check a written analysis against the run
+
+```
+rb check-analysis paper.md analysis.md
+```
+
+If something writes prose about your paper from these artifacts, whether that
+is the Claude Skill or you, this grades it against them. It refuses a citation
+the grounding pass never saw, a percentage, a verdict on the paper as a whole,
+a coverage caveat that was dropped, and a number no artifact contains. Pass `-`
+to read the analysis from stdin, which is how the skill checks its own output.
+
+It also prints the two rules it cannot check, because both need to understand a
+sentence rather than match one. A checker reporting nothing wrong without
+saying what it never examined would be making the same false-assurance move
+this tool refuses everywhere else.
+
 Exit codes: `0` nothing found, `1` findings present, `2` the tool could not do
 its job. The last two are kept apart on purpose, because a build failing on a
 weak paper and a build failing on a broken tool are different events.

@@ -50,6 +50,11 @@ These hold whether you use the skill, the CLI, or the library.
 | A deletion is refused when its target is front matter, a whole paragraph under no heading, a paragraph reporting a measurement, or a paragraph in a findings section | `edit.scope.check` | `test_edit_scope.py` |
 | The passes run in an order, and the library runs them in the same one | `passes.RUN_ORDER`, `Paper.run` | `test_api.py::test_run_walks_the_same_order_the_cli_does` |
 | Findings are shown, not only counted | `cli._emit`, `present` | `test_cli.py::test_a_single_pass_prints_findings_a_reader_can_act_on` |
+| A written analysis naming a citation the grounding pass never saw is refused | `synthesis.check` | `test_synthesis.py::test_a_citation_the_grounding_pass_never_saw_is_refused` |
+| A written analysis containing a percentage is refused | `synthesis.check` | `test_synthesis.py::test_a_percentage_is_refused` |
+| A written analysis stating a verdict on the paper is refused | `synthesis.check` | `test_synthesis.py::test_a_verdict_on_the_paper_is_refused` |
+| A written analysis that drops the coverage caveats is refused | `synthesis.check` | `test_synthesis.py::test_dropping_the_full_text_ratio_is_refused` |
+| A written analysis using a number no artifact contains is refused | `synthesis.check` | `test_synthesis.py::test_a_number_from_nowhere_is_refused` |
 
 ### The two that moved for this document
 
@@ -84,7 +89,14 @@ to a model about how to talk to a person, which is not a thing code can check.
 * Read a reference file at the step that needs it rather than loading them all.
 * Say "likely a false positive, leave it" rather than proposing a change, when
   a flag has the shape of one.
-* Write the final analysis rather than relaying ten passes of output.
+* Write the final analysis rather than relaying ten passes of output. What that
+  analysis may not contain is now largely a check, `rb check-analysis`, but
+  writing one at all is still an instruction. A model that skips the step
+  cannot be caught by a checker it never runs.
+* Do not rewrite the author's prose in the analysis, and do not answer a
+  reviewer question in it. These are the two rules of the synthesis the checker
+  cannot see, because both need to understand a sentence rather than match one.
+  It says so in its own output.
 * Never answer a reviewer question. Structural today, since nothing in this
   package generates prose, and stated here because the skill layer is the one
   place that could.

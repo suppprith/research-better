@@ -23,8 +23,9 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
 
-from research_better import __version__, present
+from research_better import __version__, present, synthesis
 from research_better import edit as edit_layer
+from research_better import report as report_pass
 from research_better.artifacts import ArtifactStore
 from research_better.errors import ResearchBetterError
 from research_better.ingest import load
@@ -210,6 +211,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     already.add_argument("draft", type=Path, help="path to the paper")
 
+    graded = commands.add_parser(
+        "check-analysis",
+        parents=[parent],
+        help="grade a written analysis against the artifacts it claims to read",
+    )
+    graded.add_argument("draft", type=Path, help="path to the paper")
+    graded.add_argument(
+        "analysis",
+        help="path to the written analysis, or - to read it from stdin",
+    )
+
     back = commands.add_parser(
         "revert", parents=[parent], help="restore the most recent backup of a draft"
     )
@@ -381,6 +393,76 @@ def findings(args: argparse.Namespace, console: Console) -> int:
             f"No analysis has been written for {draft.name} yet. Run: {PROGRAM} run {draft}"
         )
     return EXIT_CLEAN
+
+
+def check_analysis(args: argparse.Namespace, console: Console) -> int:
+    """Grade a written analysis against the artifacts it claims to be reading.
+
+    The last step of the skill is prose, and prose was the one thing here that
+    nothing checked. `references/final-analysis.md` says what it may and may
+    not contain, and a reference file is a preference. This is the check, and
+    it is the evidence gate pointed one layer up.
+
+    Reads the analysis from a file, or from stdin with `-`, so whatever wrote
+    it can pipe it straight in.
+    """
+    draft = Path(args.draft)
+    if not draft.is_file():
+        raise ResearchBetterError(f"{draft} does not exist")
+
+    if args.analysis == "-":
+        text = sys.stdin.read()
+    else:
+        source = Path(args.analysis)
+        if not source.is_file():
+            raise ResearchBetterError(f"{source} does not exist")
+        text = source.read_bytes().decode("utf-8")
+
+    if not text.strip():
+        raise ResearchBetterError(
+            "the analysis is empty. Nothing was checked, which is not the same as "
+            "nothing being wrong with it."
+        )
+
+    store = ArtifactStore(draft)
+    document = _load_document(args)
+    report = report_pass.build(document, store)
+
+    grounding_payload = store.read("grounding")
+    keys = _citation_keys(grounding_payload.payload if grounding_payload else None)
+    payloads = {
+        entry.artifact: artifact.payload
+        for entry in PASSES.values()
+        if (artifact := store.read(entry.artifact)) is not None
+    }
+
+    result = synthesis.check(
+        text,
+        report,
+        keys,
+        payloads=payloads or None,
+        draft_text=document.source_text,
+    )
+    console.say(synthesis.to_markdown(result).rstrip())
+    return EXIT_CLEAN if result.clean else EXIT_FINDINGS
+
+
+def _citation_keys(payload: object) -> set[str]:
+    """Every key the grounding pass looked at, resolved or not.
+
+    A failed lookup is still a record. Naming a citation the pass could not
+    resolve is honest reporting; naming one it never saw is invention.
+    """
+    if not isinstance(payload, dict):
+        return set()
+    citations = payload.get("citations")
+    if not isinstance(citations, dict):
+        return set()
+    found: set[str] = set()
+    for check in citations.get("checks") or ():
+        if isinstance(check, dict) and check.get("key"):
+            found.add(str(check["key"]))
+    return found
 
 
 def revert(args: argparse.Namespace, console: Console) -> int:
@@ -599,7 +681,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Neither of these is a pass. One restores a backup and reads no artifact,
     # and the other answers questions about the install rather than about a
     # paper, so neither takes a draft.
-    standalone = {"revert": revert, "doctor": doctor, "findings": findings}
+    standalone = {
+        "revert": revert,
+        "doctor": doctor,
+        "findings": findings,
+        "check-analysis": check_analysis,
+    }
 
     try:
         handler = standalone.get(args.command)

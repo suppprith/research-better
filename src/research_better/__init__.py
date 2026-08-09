@@ -12,7 +12,7 @@ is internal and may move. See `docs/API.md` for the line between them, and
         print(finding.rule, finding.matched_text)
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from research_better.api import Paper
 from research_better.errors import (

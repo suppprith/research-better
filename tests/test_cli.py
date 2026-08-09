@@ -400,3 +400,65 @@ def test_findings_warns_when_the_page_describes_an_older_draft(
 
 def test_findings_refuses_a_draft_that_does_not_exist(tmp_path: Path) -> None:
     assert main(["findings", str(tmp_path / "absent.md")]) == EXIT_ERROR
+
+
+# rb check-analysis ---------------------------------------------------------
+#
+# The last step of the skill is prose, and prose was the one thing here that
+# nothing checked. references/final-analysis.md says what a synthesis may and
+# may not contain, and a reference file is a preference.
+
+
+def written(draft: Path, body: str) -> Path:
+    target = draft.parent / "analysis.md"
+    target.write_text(body, encoding="utf-8")
+    return target
+
+
+def test_check_analysis_refuses_an_invented_citation(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    main(["fluff", str(draft), "--quiet"])
+    analysis = written(draft, "The work in [999] supports this.\n")
+    capsys.readouterr()
+
+    assert main(["check-analysis", str(draft), str(analysis)]) == EXIT_FINDINGS
+    assert "citation_not_in_grounding" in capsys.readouterr().out
+
+
+def test_check_analysis_refuses_a_percentage(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    analysis = written(draft, "Similarity came out at 14%.\n")
+    assert main(["check-analysis", str(draft), str(analysis)]) == EXIT_FINDINGS
+    assert "percentage" in capsys.readouterr().out
+
+
+def test_check_analysis_reads_from_stdin(
+    draft: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """So whatever wrote the analysis can pipe it straight in."""
+    import io
+
+    monkeypatch.setattr("sys.stdin", io.StringIO("This paper is ready for submission.\n"))
+    assert main(["check-analysis", str(draft), "-"]) == EXIT_FINDINGS
+    assert "verdict_on_the_paper" in capsys.readouterr().out
+
+
+def test_check_analysis_names_what_it_did_not_check(
+    draft: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    analysis = written(draft, "The novelty pass found an unsupported contribution.\n")
+    main(["check-analysis", str(draft), str(analysis)])
+    output = capsys.readouterr().out
+    assert "## Not checked" in output
+    assert "rewrites the author's prose" in output
+
+
+def test_check_analysis_refuses_an_empty_analysis(draft: Path) -> None:
+    """Nothing was checked, which is not the same as nothing being wrong."""
+    assert main(["check-analysis", str(draft), str(written(draft, "  \n"))]) == EXIT_ERROR
+
+
+def test_check_analysis_refuses_a_missing_file(draft: Path, tmp_path: Path) -> None:
+    assert main(["check-analysis", str(draft), str(tmp_path / "absent.md")]) == EXIT_ERROR

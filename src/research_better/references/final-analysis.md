@@ -103,6 +103,25 @@ Wrong: "No unattributed overlap was found."
 Right: "One of the six cited works had retrievable full text. The overlap check
 compared against that one and could not see the other five."
 
+## Check what you wrote
+
+```
+rb check-analysis <draft> -
+```
+
+Pipe the analysis in. It reads the artifacts and refuses a citation the
+grounding pass never saw, a percentage, a verdict on the paper, a coverage
+caveat you dropped, and a number nothing in the run supports. Fix what it names
+and run it again.
+
+It cannot check two of the rules above: whether a sentence rewrites the
+author's prose, and whether you answered a reviewer question instead of
+relaying it. Both need to understand a sentence rather than match one. It says
+so in its own output, and those two are yours to hold.
+
+A clean result means the rules it checked found nothing. It is not a second
+opinion on the analysis.
+
 ## When there is nothing to report
 
 Say what ran and what it found, which was nothing. Do not fill the space.

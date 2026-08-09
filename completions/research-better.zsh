@@ -6,6 +6,7 @@ _research_better() {
     local -a commands arguments
     commands=(
         'ask:raise the questions a reviewer will ask'
+        'check-analysis:grade a written analysis against the artifacts it claims to read'
         'doctor:report the installed version, the formats it can read, and what is missing'
         'edit:turn findings into a patch, applied only with --apply'
         'findings:print what the passes already found, without running anything'
@@ -32,6 +33,9 @@ _research_better() {
         argument)
             case "${words[2]}" in
             ask)
+                arguments=('--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')
+                ;;
+            check-analysis)
                 arguments=('--format' '--help' '--json' '--no-color' '--offline' '--quiet' '--refresh' '--venue' '--verbose' '-h' '-q' '-v')
                 ;;
             doctor)

@@ -28,6 +28,7 @@ category it is really in. **Now** is what happened.
 | The pass order | skill only | code | **`Paper.run()` added**, walking `RUN_ORDER`, the same list the CLI walks |
 | A cut may not land on front matter or destroy a findings paragraph | nowhere | code | **added** as `edit.scope`, from SUP-517 |
 | Findings are shown rather than only counted | skill only | code | **moved**, from SUP-522. The skill said "report what it returns"; the CLI now prints it |
+| What the final analysis may not contain | skill only | code, mostly | **moved**, from SUP-525. `rb check-analysis` refuses an invented citation, a percentage, a verdict on the paper, a dropped coverage caveat, and a number no artifact contains. Two of the six rules stay instructions and the checker says which |
 
 ## Instructions to a model
 
@@ -39,7 +40,8 @@ nothing for a check to check.
 | Show the claim and wait for the user | The tool can refuse to act on an unconfirmed claim, and does. It cannot make anyone read a sentence |
 | Read a reference file at the step that needs it | Context budgeting inside the model, invisible from here |
 | Say "likely a false positive, leave it" | A phrasing choice in a conversation |
-| Write the final analysis rather than relaying output | The synthesis is prose. See `references/final-analysis.md` |
+| Write the final analysis rather than relaying output | Producing it at all is an instruction. What it may not contain is now checked by `rb check-analysis` |
+| Do not rewrite prose or answer a question in the analysis | Both need to understand a sentence rather than match one. The checker declares these as unchecked rather than pretending |
 | Never answer a reviewer question | Nothing here generates prose, so today it is structural. The skill layer is the one place that could, so it is stated there |
 | Pass on what `doctor` reports | The CLI prints it. Whether it reaches the user is the model's |
 
